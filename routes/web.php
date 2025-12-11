@@ -20,6 +20,7 @@ use App\Http\Controllers\Backend\home\TransactionDetailsController;
 
 //frontend controller
 use App\Http\Controllers\Frontend\HomeController;
+use App\Http\Controllers\Frontend\JoinmembershipApplicationController;
 
 
 // Backend
@@ -107,3 +108,15 @@ Route::group(['middleware' => ['auth:web', \App\Http\Middleware\PreventBackHisto
 
 // Route::get('/', function () {return view('welcome');});
 Route::get('/', [HomeController::class, 'home'])->name('frontend.index');
+Route::get('/join-membership', [JoinmembershipApplicationController::class, 'index'])->name('joinmembership.form');
+
+Route::get('/application-form', [JoinmembershipApplicationController::class, 'create'])->name('application.create');
+
+Route::post('/application/save-step', [JoinmembershipApplicationController::class, 'saveStep'])
+    ->name('application.saveStep');
+
+Route::post('/application/submit', [JoinmembershipApplicationController::class, 'submitApplication'])
+    ->name('application.submit');
+
+Route::get('/application/saved', [JoinmembershipApplicationController::class, 'getSavedApplication'])
+    ->name('application.saved');

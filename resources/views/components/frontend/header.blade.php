@@ -15,12 +15,12 @@
 
     <div class="branding d-flex align-items-center">
       <div class="container position-relative d-flex align-items-center justify-content-end">
-        <a href="index.html" class="logo d-flex align-items-center me-auto">
+        <a href="{{ route('frontend.index') }}" class="logo d-flex align-items-center me-auto">
           <img src="{{ asset('frontend/assets/img/logo/ddpu-logo.jpg')}}" alt="DDPU Logo">
         </a>
         <nav id="navmenu" class="navmenu">
           <ul>
-            <li><a href="./" class="active">Home</a></li>
+            <li><a href="{{ route('frontend.index') }}" class="active">Home</a></li>
             <li class="dropdown"><a href="#"><span>About Us</span> <i
                   class="bi bi-chevron-down toggle-dropdown"></i></a>
               <ul>
@@ -57,7 +57,8 @@
               <ul>
                 <li><a href="#">Membership Benefits</a></li>
                 <li><a href="#">Membership Rates and Options</a></li>
-                <li><a href="#">Join Membership</a></li>
+                <li><a href="{{ route('joinmembership.form') }}" class="active">Join Membership</a></li>
+
               </ul>
             </li>
             <li><a href="#contact">Contact</a></li>

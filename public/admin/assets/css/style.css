@@ -17672,6 +17672,10 @@ p.data-attributes svg {
   font-size: 36px;
   background: var(--theme-deafult);
 }
+
+input[type="email"] {
+    text-transform: lowercase !important;
+}
 .comingsoon .comingsoon-inner .countdown .title {
   padding-top: 13px;
   font-size: 14px;

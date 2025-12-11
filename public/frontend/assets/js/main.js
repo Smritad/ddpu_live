@@ -188,3 +188,29 @@
   document.addEventListener('scroll', navmenuScrollspy);
 
 })();
+
+
+// Testimonials View More
+$(document).ready(function () {
+  let showCount = 3;
+  const testimonials = $('.testimonial-one-sec .col-md-4');
+  const viewMoreBtn = $('.testimonials-one-btn-sec a');
+
+  testimonials.hide();
+  testimonials.slice(0, showCount).show();
+
+  viewMoreBtn.on('click', function (e) {
+    e.preventDefault();
+    const nextItems = testimonials.slice(showCount, showCount + 3);
+    nextItems.stop(true, true).slideDown(500); // smooth slide animation
+    showCount += 3;
+
+    if (showCount >= testimonials.length) {
+      viewMoreBtn.fadeOut(400); // fade out button smoothly
+    }
+  });
+});
+
+
+
+
