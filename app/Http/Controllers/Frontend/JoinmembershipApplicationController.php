@@ -12,6 +12,8 @@ use App\Models\TestimonialsDetail;
 use App\Models\JoinMembershipDetail;
 use App\Models\JoinApplication;
 use App\Models\MembershipApplicationform;
+use App\Models\UsersMembership;
+use Illuminate\Support\Facades\Log;
 
 
 class JoinmembershipApplicationController extends Controller
@@ -34,59 +36,131 @@ class JoinmembershipApplicationController extends Controller
 
 
 
-   public function saveStep(Request $request)
+public function saveStep(Request $request)
 {
     $step = $request->step;
 
-    // get latest or create draft
-    $application = MembershipApplicationform::where('final_status',0)->latest('id')->first();
-    if(!$application) $application = MembershipApplicationform::create(['final_status'=>0]);
+    // Get draft or create new
+    $application = MembershipApplicationform::where('final_status', 0)->latest('id')->first();
+    if (!$application) {
+        $application = MembershipApplicationform::create([
+            'final_status' => 0,
+            'session_id' => session()->getId(),
+            'ip_address' => $request->ip(),
+        ]);
+    }
 
     $data = [];
 
-  foreach($request->data ?? [] as $key => $value){
-    if($value instanceof \Illuminate\Http\UploadedFile){
+    foreach ($request->data ?? [] as $key => $value) {
+        if ($value instanceof \Illuminate\Http\UploadedFile) {
 
-        // Store directly inside /public/applications
-        $fileName = time().'_'.$value->getClientOriginalName();
-        $value->move(public_path('applications'), $fileName);
+            $fileName = time() . '_' . $value->getClientOriginalName();
+            $value->move(public_path('applications'), $fileName);
 
-        $data[$key] = 'applications/'.$fileName;
-    }else{
-        $data[$key] = $value;
+            $data[$key] = 'applications/' . $fileName;
+        } else {
+            $data[$key] = $value;
+        }
     }
-}
 
-
-    $column = "step".$step;
+    $column = "step" . $step;
     $application->$column = $data;
     $application->save();
 
-    return response()->json(['status'=>'success','message'=>"Step $step saved"]);
+    return response()->json(['status' => 'success', 'message' => "Step $step saved"]);
 }
+
 
 
 /**
  * Final submit
  */
+
 public function submitApplication(Request $request)
 {
-    $application = MembershipApplicationform::where('final_status',0)
+    Log::info('submitApplication called', [
+        'session_id' => session()->getId(),
+        'ip' => $request->ip(),
+        'request_data' => $request->all()
+    ]);
+
+    $application = MembershipApplicationform::where('final_status', 0)
         ->latest('id')
         ->first();
 
-    if(!$application){
-        return response()->json(['status'=>'error','message'=>'No draft found'],404);
+    if (!$application) {
+        Log::error('No draft application found');
+        return response()->json([
+            'status' => 'error',
+            'message' => 'No draft found'
+        ], 404);
     }
 
-    $application->update([
-        'final_status'=>1,
-        'submitted_at'=>now(),
-    ]);
+    Log::info('Draft application found', ['application_id' => $application->id]);
 
-    return response()->json(['status'=>'success','message'=>'Application submitted successfully']);
+    try {
+        $step2 = $application->step2 ?? [];
+
+        $email = $step2['primary_email'] ?? null; // matches name="primary_email"
+        $name  = $step2['username'] ?? 'Unknown'; // matches name="username"
+        $phone = $step2['mobile_number'] ?? null; // matches name="mobile_number"
+
+        if (!$email) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Email is required in step 2'
+            ], 400);
+        }
+
+        // Check if email already exists
+        $existingUser = \App\Models\UsersMembership::where('email', $email)->first();
+        if ($existingUser) {
+            Log::warning('Email already exists', ['email' => $email]);
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Email already exists. Please use a different email.'
+            ], 409); // 409 Conflict
+        }
+
+        // Create new user
+        $user = \App\Models\UsersMembership::create([
+            'name'     => $name,
+            'email'    => $email,
+            'phone'    => $phone,
+            'password' => bcrypt('123456'), // dummy password
+        ]);
+
+        Log::info('User created', ['user_id' => $user->id]);
+
+        // Update application with final submit
+        $application->update([
+            'final_status' => 1,
+            'submitted_at' => now(),
+            'user_id'      => $user->id,
+            'session_id'   => null,
+            'ip_address'   => $request->ip(),
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Application submitted successfully',
+            'application_id' => $application->id,
+            'user_id' => $user->id,
+        ]);
+
+    } catch (\Throwable $e) {
+        Log::error('submitApplication error', [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Server error, check logs'
+        ], 500);
+    }
 }
-
 
 /**
  * Load all saved data

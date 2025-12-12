@@ -12,8 +12,17 @@ class MembershipApplicationform extends Model
     protected $table = 'membership_applicationforms';
 
     protected $fillable = [
-        'step1', 'step2', 'step3', 'step4', 'step5', 'step6', 'step7',
+        'step1',
+        'step2',
+        'step3',
+        'step4',
+        'step5',
+        'step6',
+        'step7',
         'final_status',
+        'user_id',
+        'session_id',
+        'ip_address',
         'submitted_at',
     ];
 
@@ -25,7 +34,16 @@ class MembershipApplicationform extends Model
         'step5' => 'array',
         'step6' => 'array',
         'step7' => 'array',
+
         'final_status' => 'boolean',
         'submitted_at' => 'datetime',
     ];
+
+    /**
+     * Relationship: Each application belongs to a user_membership
+     */
+    public function user()
+    {
+        return $this->belongsTo(UsersMembership::class, 'user_id');
+    }
 }

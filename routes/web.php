@@ -18,9 +18,12 @@ use App\Http\Controllers\Backend\home\PaperlessDetailsController;
 use App\Http\Controllers\Backend\home\SubmissionsRemindersController;
 use App\Http\Controllers\Backend\home\TransactionDetailsController;
 
+
 //frontend controller
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\JoinmembershipApplicationController;
+use App\Http\Controllers\Frontend\SignupController;
+
 
 
 // Backend
@@ -31,6 +34,7 @@ Route::get('/change-password', [LoginController::class, 'change_password'])->nam
 Route::post('/update-password', [LoginController::class, 'updatePassword'])->name('admin.updatepassword');
 Route::get('/admin-register', [LoginController::class, 'register'])->name('admin.register');
 Route::post('/register', [LoginController::class, 'authenticate_register'])->name('admin.register.authenticate');
+
 
 //Backend home pages 
 Route::resource('banner-details', BannerDetailsController::class);
@@ -58,6 +62,7 @@ Route::post('/process', [PaperlessDetailsController::class,'process'])->name('di
 Route::post('/mark-processed', [PaperlessDetailsController::class,'markProcessed'])->name('direct_debit.markProcessed');
 Route::get('/edit/{id}', [PaperlessDetailsController::class, 'edit'])->name('direct_debit.edit');
 Route::post('/update/{id}', [PaperlessDetailsController::class, 'update'])->name('direct_debit.update');
+
 
 //Backend SubmissionsReminders
 Route::get('/Submissions-schedules', [SubmissionsRemindersController::class,'index'])->name('Submissionsschedules.index');
@@ -102,10 +107,6 @@ Route::group(['middleware' => ['auth:web', \App\Http\Middleware\PreventBackHisto
 
 
 
-
-
-
-
 // Route::get('/', function () {return view('welcome');});
 Route::get('/', [HomeController::class, 'home'])->name('frontend.index');
 Route::get('/join-membership', [JoinmembershipApplicationController::class, 'index'])->name('joinmembership.form');
@@ -120,3 +121,5 @@ Route::post('/application/submit', [JoinmembershipApplicationController::class, 
 
 Route::get('/application/saved', [JoinmembershipApplicationController::class, 'getSavedApplication'])
     ->name('application.saved');
+
+Route::get('/Signup-form/{id}', [SignupController::class, 'index'])->name('signup.form');

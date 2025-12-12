@@ -295,92 +295,95 @@
                         </form>
                     </div>
 
-                    <!-- STEP 2 -->
-                    <div id="step2Box" class="slider-step af-border-sec" data-next-step="step3Box" data-back-to="step1box" data-step="2">
-                        <div class="application-form-title-sec creative-med-title">
-                            <div class="title-icon"><i class="fa-solid fa-user"></i></div>
-                            <h3>Step 2</h3>
+                   <!-- STEP 2 -->
+                        <div id="step2Box" class="slider-step af-border-sec" data-next-step="step3Box" data-back-to="step1Box" data-step="2">
+                            <div class="application-form-title-sec creative-med-title">
+                                <div class="title-icon"><i class="fa-solid fa-user"></i></div>
+                                <h3>Step 2</h3>
+                            </div>
+
+                            <div class="app-form-title-subsec"><h4>Telephone Contact Details</h4></div>
+
+                            <form id="step2Form" class="row g-3">
+
+                                <!-- Telephone Day -->
+                                <div class="col-md-4">
+                                    <input type="tel" class="form-control" id="app-form-telephone-day"
+                                        placeholder="Telephone (Day)" minlength="10" maxlength="15"
+                                        name="telephone_day"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                </div>
+
+                                <!-- Telephone Evening -->
+                                <div class="col-md-4">
+                                    <input type="tel" class="form-control" id="app-form-telephone-evening"
+                                        placeholder="Telephone (Evening)" minlength="10" maxlength="15"
+                                        name="telephone_evening"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                </div>
+
+                                <!-- Mobile Number -->
+                                <div class="col-md-4">
+                                    <input type="tel" class="form-control" id="app-form-mobile-number"
+                                        placeholder="Mobile Number" minlength="10" maxlength="15"
+                                        name="mobile_number"
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                </div>
+
+                                <div class="app-form-title-subsec"><h4>Security</h4></div>
+
+                                <!-- Primary Email -->
+                                <div class="col-md-6">
+                                    <input type="email" class="form-control" id="app-form-primary-email"
+                                        placeholder="Primary Email" name="primary_email" required>
+                                </div>
+
+                                <!-- Secondary Email (Optional) -->
+                                <div class="col-md-6">
+                                    <input type="email" class="form-control" id="app-form-secondary-email-optional"
+                                        placeholder="Secondary Email (Optional)" name="secondary_email">
+                                </div>
+
+                                <!-- Username -->
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" id="app-form-select-username"
+                                        placeholder="Enter a Username" name="username" required>
+                                </div>
+
+                                <!-- Password -->
+                                <div class="col-md-4">
+                                    <div class="position-relative">
+                                        <input type="password" class="form-control" id="app-form-select-password"
+                                            placeholder="Enter a Password" name="password" required>
+                                        <i class="fa-solid fa-eye toggle-password" data-target="#app-form-select-password" style="cursor:pointer;"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Confirm Password -->
+                                <div class="col-md-4">
+                                    <div class="position-relative">
+                                        <input type="password" class="form-control" id="app-form-verify-password"
+                                            placeholder="Verify Password" name="confirm_password" required>
+                                        <i class="fa-solid fa-eye toggle-password" data-target="#app-form-verify-password" style="cursor:pointer;"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="col-4">
+                                    <button type="button" class="form-control btn-back app-form-btn">Previous</button>
+                                </div>
+
+                                <div class="col-4">
+                                    <button type="button" value="save-draft" class="form-control app-form-btn">Save Draft</button>
+                                </div>
+
+                                <div class="col-4">
+                                    <button type="button" value="Continue" class="btn-next btn-success form-control app-form-btn">Continue</button>
+                                </div>
+
+                            </form>
                         </div>
 
-                        <div class="app-form-title-subsec"><h4>Telephone Contact Details</h4></div>
-
-                        <form id="step2Form" class="row g-3">
-
-                            <div class="col-md-4">
-                                <input type="tel" class="form-control" id="app-form-telephone-day"
-                                    placeholder="Telephone (Day)" minlength="10" maxlength="15"
-                                    name="telephone_day"
-                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                            </div>
-
-                            <div class="col-md-4">
-                                <input type="tel" class="form-control" id="app-form-telephone-evening"
-                                    placeholder="Telephone (Evening)" minlength="10" maxlength="15"
-                                    name="telephone_evening"
-                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                            </div>
-
-                            <div class="col-md-4">
-                                <input type="tel" class="form-control" id="app-form-mobile-number"
-                                    placeholder="Mobile Number" minlength="10" maxlength="15"
-                                    name="mobile_number"
-                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                            </div>
-
-
-                        </form>
-
-                        <hr>
-
-                        <div class="app-form-title-subsec"><h4>Security</h4></div>
-
-                        <form class="row g-3">
-
-                            <div class="col-md-6">
-                                <input type="email" class="form-control" id="app-form-primary-email"
-                                    placeholder="Primary Email" name="primary_email">
-                            </div>
-
-                            <div class="col-md-6">
-                                <input type="email" class="form-control" id="app-form-secondary-email-optional"
-                                    placeholder="Secondary Email (Optional)" name="secondary_email">
-                            </div>
-
-                            <div class="col-md-4">
-                                <input type="text" class="form-control" id="app-form-select-username"
-                                    placeholder="Enter a Username" name="username">
-                            </div>
-
-                            <div class="col-md-4">
-                                <div class="position-relative">
-                                    <input type="password" class="form-control" id="app-form-select-password"
-                                        placeholder="Enter a Password" name="password">
-                                    <i class="fa-solid fa-eye toggle-password" data-target="#app-form-select-password"></i>
-                                </div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <div class="position-relative">
-                                    <input type="password" class="form-control" id="app-form-verify-password"
-                                        placeholder="Verify Password" name="confirm_password">
-                                    <i class="fa-solid fa-eye toggle-password" data-target="#app-form-verify-password"></i>
-                                </div>
-                            </div>
-
-                            <div class="col-4">
-                                <button type="button" value="save-draft" class="form-control btn-back app-form-btn">Previous</button>
-                            </div>
-
-                            <div class="col-4">
-                                <button type="button" value="save-draft" class="form-control app-form-btn">Save Draft</button>
-                            </div>
-
-                            <div class="col-4">
-                                <button type="button" value="Continue" class="btn-next btn-success form-control app-form-btn">Continue</button>
-                            </div>
-
-                        </form>
-                    </div>
 
                     <!-- STEP 3 -->
                     <div id="step3Box" class="slider-step af-border-sec" data-next-step="step4Box" data-back-to="step2Box" data-step="3">
@@ -685,14 +688,6 @@
                             </div>
                         </div>
 
-
-
-
-                    
-
-
-                 
-
                 </div>
             </div>
         </div>
@@ -809,6 +804,7 @@ function formatLabel(name) {
 =  STEP 7 FINAL SUBMIT (No Step 8)
 ============================================================ */
 
+
 document.getElementById("finalSubmitBtn").addEventListener("click", async function () {
 
     // Validate Terms
@@ -827,31 +823,49 @@ document.getElementById("finalSubmitBtn").addEventListener("click", async functi
         didOpen: () => Swal.showLoading(),
     });
 
-    // Submit to backend
-    const fin = await fetch("{{ route('application.submit') }}", {
-        method: "POST",
-        headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" }
-    });
-
-    const res = await fin.json();
-
-    // Success
-    if (res.status === "success") {
-        Swal.fire({
-            icon: "success",
-            title: "Application Submitted!",
-            text: "Redirecting...",
-            timer: 2000,
-            showConfirmButton: false
+    try {
+        const fin = await fetch("{{ route('application.submit') }}", {
+            method: "POST",
+            headers: { 
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            }
         });
 
-        setTimeout(() => {
-            window.location.href = "/"; // go home
-        }, 1800);
-    } else {
-        Swal.fire("Error", "Something went wrong!", "error");
+        const res = await fin.json();
+
+        if (res.status === "success") {
+            Swal.fire({
+                icon: "success",
+                title: "Application Submitted!",
+                text: "Redirecting...",
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            setTimeout(() => {
+                window.location.href = "/Signup-form/" + res.application_id;
+            }, 1800);
+
+        } else {
+            // Display the backend message exactly as it is
+            Swal.fire({
+                icon: "error",
+                title: "Error",
+                text: res.message  // <-- shows "Email already exists..." now
+            });
+        }
+
+    } catch (err) {
+        // Network or unexpected errors
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Server error. Please try again."
+        });
     }
 });
+
 </script>
 
       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1195,7 +1209,7 @@ window.addEventListener("DOMContentLoaded", ()=>{
         else input.value = draft.data[name];
     });
 
-    showToast("Draft restored from last session!");
+   // showToast("Draft restored from last session!");
 });
 
 
