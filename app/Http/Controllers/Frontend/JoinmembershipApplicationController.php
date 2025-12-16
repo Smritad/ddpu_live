@@ -100,18 +100,27 @@ public function submitApplication(Request $request)
     Log::info('Draft application found', ['application_id' => $application->id]);
 
     try {
-        $step2 = $application->step2 ?? [];
+        $step1 = $application->step1 ?? [];
+            $step2 = $application->step2 ?? [];
 
-        $email = $step2['primary_email'] ?? null; // matches name="primary_email"
-        $name  = $step2['username'] ?? 'Unknown'; // matches name="username"
-        $phone = $step2['mobile_number'] ?? null; // matches name="mobile_number"
+            // Build full name from Step 1
+            $firstName  = $step1['first_name'] ?? '';
+            $middleName = $step1['middle_name'] ?? '';
+            $lastName   = $step1['last_name'] ?? '';
 
-        if (!$email) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Email is required in step 2'
-            ], 400);
-        }
+            $name = trim($firstName . ' ' . $middleName . ' ' . $lastName);
+
+            // Email & phone still come from Step 2
+            $email = $step2['primary_email'] ?? null;
+            $phone = $step2['mobile_number'] ?? null;
+
+            if (!$email) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Email is required in step 2'
+                ], 400);
+            }
+
 
         // Check if email already exists
         $existingUser = \App\Models\UsersMembership::where('email', $email)->first();

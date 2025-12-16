@@ -6,13 +6,101 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Signupform;
-
+use App\Models\MembershipApplicationform;
+ use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\User;
 
 class SignupController extends Controller
 {
      public function index($id)
 {
     return view('frontend.signup', compact('id'));
+}
+
+
+
+    // STEP 1 SAVE
+    public function saveStep1(Request $request)
+    {
+        $record = MembershipApplicationform::where('user_id', $request->user_id)->first();
+
+        if (!$record) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $stepData = $request->step1_data;
+
+        // PHYSICAL FILE UPLOAD
+        if ($request->hasFile('mandate_file')) {
+
+            $file = $request->file('mandate_file');
+            $fileName = 'direct_debit_' . time() . '.' . $file->getClientOriginalExtension();
+
+            $path = public_path('direct-debit');
+            if (!file_exists($path)) {
+                mkdir($path, 0777, true);
+            }
+
+            $file->move($path, $fileName);
+            $stepData['file_name'] = $fileName;
+        }
+
+        $record->step1_signup = $stepData;
+        $record->final_submit_signup = 0;
+        $record->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    // FINAL SUBMIT
+    public function finalSubmit(Request $request)
+    {
+        $record = MembershipApplicationform::where('user_id', $request->user_id)->first();
+
+        if (!$record || !$record->step1_signup) {
+            return response()->json(['error' => 'Step 1 not completed'], 422);
+        }
+
+        $record->final_submit_signup = 1;
+        $record->submitted_at = now();
+        $record->save();
+
+        return response()->json(['success' => true]);
+    }
+
+
+   
+
+public function generatePdf($userId)
+{
+    
+    $record = MembershipApplicationform::find($userId);
+
+    if (!$record || !$record->step1_signup) {
+        abort(404, "Application data not found.");
+    }
+
+    // Decode JSON if step1_data is stored as JSON
+    $data = is_array($record->step1_signup) ? $record->step1_signup : json_decode($record->step1_signup, true);
+    if (!$data) {
+        abort(404, "Step1 data is empty or invalid.");
+    }
+
+    $serviceNumber = $data['service_number'] ?? 'UNKNOWN';
+
+    $pdf = Pdf::loadView('pdf.direct-debit', [
+        'accountHolder' => $data['account_holder'] ?? null,
+        'accountNumber' => $data['account_number'] ?? null,
+        'sortCode'      => $data['sort_code'] ?? null,
+        'bankName'      => $data['bank_name'] ?? null,
+        'branchName'    => $data['branch_name'] ?? null,
+        'companyName'   => $data['company_name'] ?? null,
+        'serviceNumber' => $serviceNumber,
+        'date'          => now()->format('d F, Y')
+    ]);
+
+$safeServiceNumber = str_replace(['/', '\\'], '_', $serviceNumber);
+return $pdf->download("Direct_Debit_Instruction_{$safeServiceNumber}.pdf");
 }
 
 }

@@ -23,6 +23,7 @@ use App\Http\Controllers\Backend\home\TransactionDetailsController;
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\JoinmembershipApplicationController;
 use App\Http\Controllers\Frontend\SignupController;
+use App\Http\Controllers\BankValidationController;
 
 
 
@@ -123,3 +124,11 @@ Route::get('/application/saved', [JoinmembershipApplicationController::class, 'g
     ->name('application.saved');
 
 Route::get('/Signup-form/{id}', [SignupController::class, 'index'])->name('signup.form');
+
+
+Route::post('/signup/step1-save', [SignupController::class, 'saveStep1']);
+Route::post('/signup/final-submit', [SignupController::class, 'finalSubmit']);
+
+
+Route::get('/proxy-bank-validation', [BankValidationController::class, 'validateBank']);
+Route::get('/signup/step2/pdf/{userId}', [SignupController::class, 'generatePdf']);

@@ -195,8 +195,12 @@
                                     <option value="Other">Other</option>
                                 </select>
                             </div>
-
-                            <div class="col-12">
+                            <div class="col-6">
+                                <input type="text" class="form-control" id="app-form-postal-code"
+                                placeholder="Postal Code" maxlength="10" name="postal-code"
+                                oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9\s-]/g,'')">
+                            </div>
+                            <div class="col-6">
                                 <input type="text" class="form-control" id="app-form-address-line-one"
                                     placeholder="Address Line 1" name="address_line_1">
                             </div>
@@ -207,31 +211,18 @@
                             </div>
 
                             <div class="col-6">
-                                <input type="text" class="form-control" id="app-form-address-line-three"
-                                    placeholder="Address Line 3" name="address_line_3">
-                            </div>
-
-                            <div class="col-4">
                                 <input type="text" class="form-control" id="app-form-city" placeholder="City"
                                     name="city">
                             </div>
 
-                            <div class="col-4">
+                            <div class="col-6">
                                 <select class="form-select" id="app-form-country" name="country">
                                     <option disabled selected>Select Country</option>
                                     @foreach($countries as $country)
                                         <option value="{{ $country->name }}">{{ $country->name }}</option>
                                     @endforeach
                                 </select>
-                            </div>
-
-                             <div class="col-4">
-                                <input type="text" class="form-control" id="app-form-postal-code"
-                                placeholder="Postal Code" maxlength="10" name="postal-code"
-                                oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9\s-]/g,'')">
-                            </div>
-
-
+                             </div>
                             <hr>
 
                             <div class="app-form-title-subsec">
@@ -247,8 +238,13 @@
                                     </label>
                                 </div>
                             </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control" id="contact-postal-code"
+                                placeholder="Postal Code" maxlength="10" name="contact_postal_code"
+                                oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9\s-]/g,'')">
 
-                            <div class="col-12">
+                            </div>
+                            <div class="col-6">
                                 <input type="text" class="form-control" id="contact-address-line-one"
                                     placeholder="Address Line 1" name="contact_address_line_1">
                             </div>
@@ -257,18 +253,12 @@
                                 <input type="text" class="form-control" id="contact-address-line-two"
                                     placeholder="Address Line 2" name="contact_address_line_2">
                             </div>
-
                             <div class="col-6">
-                                <input type="text" class="form-control" id="contact-address-line-three"
-                                    placeholder="Address Line 3" name="contact_address_line_3">
-                            </div>
+                                <input type="text" class="form-control" id="contact-city"
+                                placeholder="City" name="contact_city">
 
-                            <div class="col-4">
-                                <input type="text" class="form-control" id="contact-city" placeholder="City"
-                                    name="contact_city">
                             </div>
-
-                            <div class="col-4">
+                            <div class="col-12">
                                 <select class="form-select" id="contact-country" name="contact_country">
                                     <option disabled selected>Select Country</option>
                                     @foreach($countries as $country)
@@ -277,12 +267,7 @@
                                 </select>
                             </div>
 
-                            <div class="col-4">
-                                <input type="text" class="form-control" id="contact-postal-code"
-                                placeholder="Postal Code" maxlength="10" name="contact_postal_code"
-                                oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9\s-]/g,'')">
-
-                            </div>
+                            
 
                             <div class="col-6">
                                 <button type="button" value="save-draft" class="form-control app-form-btn">Save Draft</button>
@@ -295,7 +280,7 @@
                         </form>
                     </div>
 
-                   <!-- STEP 2 -->
+                        <!-- STEP 2 -->
                         <div id="step2Box" class="slider-step af-border-sec" data-next-step="step3Box" data-back-to="step1Box" data-step="2">
                             <div class="application-form-title-sec creative-med-title">
                                 <div class="title-icon"><i class="fa-solid fa-user"></i></div>
@@ -734,7 +719,7 @@
   <!--<div id="preloader"></div>-->
 
       @include('components.frontend.main-js')
-      <script>
+<script>
 /* ============================================================
 =  STEP 7 - PREVIEW GENERATOR
 ============================================================ */
@@ -1013,7 +998,12 @@ function validateStep(step){
             if(!val("employment-grade")){showError("employment-grade","Required");valid=false;}
         }
     }
-    if(step===4 && !document.querySelector(".pni-option:checked")){showError("pni-yes","Required");valid=false;}
+if(step === 4 && !document.querySelector(".pni-option:checked")) {
+    document.querySelectorAll(".pni-option").forEach(el => {
+        showError(el.id, "Required");
+    });
+    valid = false;
+}
     if(step===5){
         ["pre-issue-q31","pre-issue-q32","pre-issue-q33"].forEach(id=>{
             if(!val(id)){showError(id,"Required");valid=false;}
@@ -1230,14 +1220,39 @@ document.querySelectorAll(".toggle-password").forEach(i=>{
 /* =========================================================
 =  COPY ADDRESS
 ========================================================= */
-document.getElementById("same-address-checkbox")?.addEventListener("change",function(){
-    const copy=k=>document.querySelector(`#contact-${k}`).value=document.querySelector(`#app-form-${k.replace(/-/g,"-")}`)?.value;
-    if(this.checked){
-        ["address-line-one","address-line-two","address-line-three","city","country","postal-code"].forEach(copy);
-    }else{
-        ["contact-address-line-one","contact-address-line-two","contact-address-line-three","contact-city","contact-country","contact-postal-code"].forEach(id=>document.getElementById(id).value="");
+document.getElementById("same-address-checkbox")?.addEventListener("change", function () {
+
+    if (this.checked) {
+
+        // Copy text inputs
+        document.getElementById("contact-postal-code").value =
+            document.getElementById("app-form-postal-code").value;
+
+        document.getElementById("contact-address-line-one").value =
+            document.getElementById("app-form-address-line-one").value;
+
+        document.getElementById("contact-address-line-two").value =
+            document.getElementById("app-form-address-line-two").value;
+
+        // Copy country (SELECT)
+        const mainCountry = document.getElementById("app-form-country").value;
+        const contactCountry = document.getElementById("contact-country");
+
+        contactCountry.value = mainCountry;
+        contactCountry.dispatchEvent(new Event("change")); // important
+
+    } else {
+
+        // Clear contact address fields
+        document.getElementById("contact-postal-code").value = "";
+        document.getElementById("contact-address-line-one").value = "";
+        document.getElementById("contact-address-line-two").value = "";
+        document.getElementById("contact-country").value = "";
+
     }
 });
+
+
 
 
 /* =========================================================
@@ -1258,9 +1273,41 @@ document.querySelectorAll(".pni-option").forEach(o=>{
 /* =========================================================
 =  Postal Code
 ========================================================= */
-document.querySelectorAll('input[name="postal_code"], input[name="contact_postal_code"]').forEach(input => {
-    input.addEventListener('blur', () => input.value = input.value.trim());
+document.getElementById("same-address-checkbox")?.addEventListener("change", function () {
+
+    if (this.checked) {
+
+        document.getElementById("contact-postal-code").value =
+            document.getElementById("app-form-postal-code").value;
+
+        document.getElementById("contact-address-line-one").value =
+            document.getElementById("app-form-address-line-one").value;
+
+        document.getElementById("contact-address-line-two").value =
+            document.getElementById("app-form-address-line-two").value;
+
+        document.getElementById("contact-city").value =
+            document.getElementById("app-form-city").value;
+
+        // Country (select)
+        const mainCountry = document.getElementById("app-form-country").value;
+        const contactCountry = document.getElementById("contact-country");
+
+        contactCountry.value = mainCountry;
+        contactCountry.dispatchEvent(new Event("change"));
+
+    } else {
+
+        document.getElementById("contact-postal-code").value = "";
+        document.getElementById("contact-address-line-one").value = "";
+        document.getElementById("contact-address-line-two").value = "";
+        document.getElementById("contact-city").value = "";
+        document.getElementById("contact-country").value = "";
+
+    }
 });
+
+
 
 /* =========================================================
 =  DATE PICKERS
