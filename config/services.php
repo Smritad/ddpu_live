@@ -27,6 +27,10 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
+'fastpay' => [
+    'url'   => env('FASTPAY_API_URL'),
+    'token' => env('FASTPAY_BEARER_TOKEN'),
+],
 
     'slack' => [
         'notifications' => [

@@ -12,6 +12,9 @@ use App\Imports\FileDataImport;
 use App\Exports\FileDataExport;
 use Maatwebsite\Excel\Excel as ExcelFormat;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class FilesDetailsController extends Controller
 {
@@ -22,6 +25,7 @@ class FilesDetailsController extends Controller
     }
 
 
+
 public function import(Request $request)
 {
     $request->validate([
@@ -29,40 +33,97 @@ public function import(Request $request)
         'collection_date' => 'nullable|date'
     ]);
 
-    $uploadedFile = $request->file('file');
-    $fileName = $uploadedFile->getClientOriginalName();
+    $uploadedFile   = $request->file('file');
+    $fileName       = $uploadedFile->getClientOriginalName();
     $collectionDate = $request->collection_date;
-    $uploadedDate = now();
+    $uploadedDate   = now();
 
-    // create file record
+    /* -------------------------------------------------
+     | 1️⃣ CREATE FILE RECORD FIRST
+     ------------------------------------------------- */
     $file = File::create([
-        'file_name' => $fileName,
+        'file_name'       => $fileName,
         'collection_date' => $collectionDate,
-        'uploaded_date' => $uploadedDate,
-        'notes' => $request->notes ?? null,
+        'uploaded_date'   => $uploadedDate,
+        'notes'           => $request->notes ?? null,
     ]);
 
-try {
-    Log::info('📁 Import started', [
-        'file_name' => $fileName,
-        'file_id' => $file->id,
-        'collection_date' => $collectionDate,
-    ]);
+    try {
+        Log::info('📁 Import started', [
+            'file_name' => $fileName,
+            'file_id' => $file->id,
+            'collection_date' => $collectionDate,
+        ]);
 
-    // TEMP: Debug what's inside the sheet
-    $data = Excel::toArray(new FileDataImport($file->id), $uploadedFile);
-    Log::info('📄 Raw Excel Data:', [
-        'sheet_1_rows' => isset($data[0]) ? count($data[0]) : 0,
-        'first_row' => $data[0][0] ?? [],
-    ]);
+        /* -------------------------------------------------
+         | 2️⃣ SEND FILE TO FASTPAY
+         ------------------------------------------------- */
+        $rawFile   = file_get_contents($uploadedFile->getRealPath());
+        $base64    = base64_encode($rawFile);
 
-    Excel::import(new FileDataImport($file->id), $uploadedFile);
+        $fastpayPayload = [
+            "MessageControl" => [
+                "Version" => "1"
+            ],
+            "Data" => [
+                "Filename"       => $fileName,
+                "FileContent"    => $base64,
+                "SubmissionDate" => $collectionDate
+                    ? Carbon::parse($collectionDate)->format('Y-m-d')
+                    : now()->format('Y-m-d'),
+                "UploadDate"     => now()->format('Y-m-d'),
+            ]
+        ];
 
-        // compute total amount
-        $total = FileDetail::where('file_id', $file->id)->sum('amount');
+        $fastpayResponse = Http::withHeaders([
+            'Accept'       => 'application/json',
+            'Bearer-Token' => config('services.fastpay.token'),
+        ])->post(
+            config('services.fastpay.url') . '/api/Files',
+            $fastpayPayload
+        );
+
+        if (!$fastpayResponse->successful()) {
+            throw new \Exception(
+                'FastPay API error: ' . $fastpayResponse->body()
+            );
+        }
+
+        Log::info('🚀 FastPay upload successful', [
+            'file_id' => $file->id,
+        ]);
+
+        /* -------------------------------------------------
+         | 3️⃣ STORE FILE LOCALLY
+         ------------------------------------------------- */
+        $storedPath = $uploadedFile->store('uploads/fastpay');
+
+        $file->update([
+            'file_path'        => $storedPath,
+            'fastpay_response' => $fastpayResponse->body(),
+        ]);
+
+        /* -------------------------------------------------
+         | 4️⃣ EXCEL IMPORT (YOUR EXISTING LOGIC)
+         ------------------------------------------------- */
+        $data = Excel::toArray(new FileDataImport($file->id), $uploadedFile);
+
+        Log::info('📄 Raw Excel Data', [
+            'sheet_1_rows' => isset($data[0]) ? count($data[0]) : 0,
+            'first_row' => $data[0][0] ?? [],
+        ]);
+
+        Excel::import(new FileDataImport($file->id), $uploadedFile);
+
+        /* -------------------------------------------------
+         | 5️⃣ COMPUTE TOTALS
+         ------------------------------------------------- */
+        $total    = FileDetail::where('file_id', $file->id)->sum('amount');
         $rowCount = FileDetail::where('file_id', $file->id)->count();
 
-        $file->update(['total_amount' => $total]);
+        $file->update([
+            'total_amount' => $total
+        ]);
 
         Log::info('✅ Import completed successfully', [
             'file_id' => $file->id,
@@ -70,20 +131,29 @@ try {
             'total_amount' => $total,
         ]);
 
-        return redirect()->back()->with('success', '✅ File imported successfully!');
+        return redirect()->back()
+            ->with('success', '✅ File uploaded to FastPay and imported successfully!');
+
     } catch (\Exception $e) {
-        // Delete incomplete file record if import fails
+
+        /* -------------------------------------------------
+         | ❌ FULL ROLLBACK
+         ------------------------------------------------- */
+        if (!empty($file->file_path)) {
+            Storage::delete($file->file_path);
+        }
+
         $file->delete();
+
         Log::error('❌ Import failed', [
             'file_name' => $fileName,
             'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString(),
         ]);
 
-        return redirect()->back()->with('error', '❌ Import failed: ' . $e->getMessage());
+        return redirect()->back()
+            ->with('error', '❌ Import failed: ' . $e->getMessage());
     }
 }
-
 
 
 

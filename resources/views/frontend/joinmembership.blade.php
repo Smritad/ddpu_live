@@ -296,7 +296,7 @@
                                     <input type="tel" class="form-control" id="app-form-telephone-day"
                                         placeholder="Telephone (Day)" minlength="10" maxlength="15"
                                         name="telephone_day"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 </div>
 
                                 <!-- Telephone Evening -->
@@ -304,7 +304,7 @@
                                     <input type="tel" class="form-control" id="app-form-telephone-evening"
                                         placeholder="Telephone (Evening)" minlength="10" maxlength="15"
                                         name="telephone_evening"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')" required> 
                                 </div>
 
                                 <!-- Mobile Number -->
@@ -326,7 +326,7 @@
                                 <!-- Secondary Email (Optional) -->
                                 <div class="col-md-6">
                                     <input type="email" class="form-control" id="app-form-secondary-email-optional"
-                                        placeholder="Secondary Email (Optional)" name="secondary_email">
+                                        placeholder="Secondary Email (Optional)" name="secondary_email" required>
                                 </div>
 
                                 <!-- Username -->
@@ -563,14 +563,14 @@
 
                             <div class="col-12">
                                 <label class="form-label"><strong>Q.</strong> Have any claims [...]</label>
-                                <textarea class="form-control app-form-textarea-custom-sec"
-                                    rows="4" placeholder="Enter details here..." name="claims_q1"></textarea>
+                                <textarea class="form-control app-form-textarea-custom-sec" id="claims-q1"
+                                    rows="4" placeholder="Enter details here..." name="claims_q1" required></textarea>
                             </div>
 
                             <div class="col-12">
                                 <label class="form-label"><strong>Q.</strong> Are you aware of any acts [...]</label>
-                                <textarea class="form-control app-form-textarea-custom-sec"
-                                    rows="4" placeholder="Enter details here..." name="claims_q2"></textarea>
+                                <textarea class="form-control app-form-textarea-custom-sec" id="claims-q2"
+                                    rows="4" placeholder="Enter details here..." name="claims_q2" required></textarea>
                             </div>
 
                             <hr>
@@ -979,12 +979,18 @@ function validateStep(step){
         if(!val("app-form-date-of-birth")){showError("app-form-date-of-birth","Required");valid=false;}
         if(!val("gender-select")){showError("gender-select","Required");valid=false;}
         if(!val("app-form-address-line-one")){showError("app-form-address-line-one","Required");valid=false;}
+                if(!val("app-form-address-line-two")){showError("app-form-address-line-two","Required");valid=false;}
+
         if(!val("app-form-city")){showError("app-form-city","Required");valid=false;}
         if(!val("app-form-country")){showError("app-form-country","Required");valid=false;}
         if(!val("app-form-postal-code")){showError("app-form-postal-code","Required");valid=false;}
     }
     if(step===2){
         if(!val("app-form-primary-email")){showError("app-form-primary-email","Required");valid=false;}
+                if(!val("app-form-telephone-day")){showError("app-form-telephone-day","Required");valid=false;}
+        if(!val("app-form-secondary-email-optional")){showError("app-form-secondary-email-optional","Required");valid=false;}
+        if(!val("app-form-telephone-evening")){showError("app-form-telephone-evening","Required");valid=false;}
+
         else if(!isEmail(val("app-form-primary-email"))){showError("app-form-primary-email","Invalid Email");valid=false;}
         if(!val("app-form-select-username")){showError("app-form-select-username","Required");valid=false;}
         if(!val("app-form-select-password")){showError("app-form-select-password","Required");valid=false;}
@@ -992,8 +998,11 @@ function validateStep(step){
     }
     if(step===3){
         if(!val("app-form-desc-of-current-role")){showError("app-form-desc-of-current-role","Required");valid=false;}
-        if(!val("emp-status")){showError("emp-status","Required");valid=false;}
-        if(val("emp-status")==="employed"){
+        
+if(!val("emp-status")){
+        showError("emp-status", "Required");
+        valid = false;
+    }        if(val("emp-status")==="employed"){
             if(!val("current-employer")){showError("current-employer","Required");valid=false;}
             if(!val("employment-grade")){showError("employment-grade","Required");valid=false;}
         }
@@ -1010,6 +1019,9 @@ if(step === 4 && !document.querySelector(".pni-option:checked")) {
         });
     }
     if(step===6){
+        if(!val("claims-q1")){showError("claims-q1","Required");valid=false;}
+        if(!val("claims-q2")){showError("claims-q2","Required");valid=false;}
+
         if(!val("prev-membership-name")){showError("prev-membership-name","Required");valid=false;}
         if(!val("prev-membership-expiry")){showError("prev-membership-expiry","Required");valid=false;}
     }

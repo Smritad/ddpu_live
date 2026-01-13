@@ -53,44 +53,44 @@
 
                     <div class="table-responsive custom-scrollbar">
                     <table class="display table table-striped" id="basic-1">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Join Membership Heading</th>
-            <th>Join Membership Image</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach($memberships as $index => $membership)
-        <tr>
-            <td>{{ $index + 1 }}</td>
-            <td>{{ $membership->heading }}</td>
-            <td>
-                @if($membership->image)
-                    <img src="{{ asset('joinmembership-images/'.$membership->image) }}" 
-                         alt="{{ $membership->heading }}" style="max-width:100px;">
-                @else
-                    N/A
-                @endif
-            </td>
-            <td>
-                <a href="{{ route('joinmembership-details.edit', $membership->id) }}" 
-                   class="btn btn-sm btn-primary mb-1">
-                   <i class="bi bi-pencil-square"></i> Edit
-                </a>
-                <form action="{{ route('joinmembership-details.destroy', $membership->id) }}" method="POST" style="display:inline-block;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-danger mb-1" onclick="return confirm('Are you sure you want to delete this item?');">
-                        <i class="bi bi-trash"></i> Delete
-                    </button>
-                </form>
-            </td>
-        </tr>
-        @endforeach
-    </tbody>
-</table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Join Membership Heading</th>
+                            <th>Join Membership Image</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($memberships as $index => $membership)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $membership->heading }}</td>
+                            <td>
+                                @if($membership->image)
+                                    <img src="{{ asset('joinmembership-images/'.$membership->image) }}" 
+                                        alt="{{ $membership->heading }}" style="max-width:100px;">
+                                @else
+                                    N/A
+                                @endif
+                            </td>
+                            <td>
+                                <a href="{{ route('joinmembership-details.edit', $membership->id) }}" 
+                                  class="btn btn-sm btn-primary mb-1">
+                                  <i class="bi bi-pencil-square"></i> Edit
+                                </a>
+                                <form action="{{ route('joinmembership-details.destroy', $membership->id) }}" method="POST" style="display:inline-block;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger mb-1" onclick="return confirm('Are you sure you want to delete this item?');">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
 
 
                     </div>

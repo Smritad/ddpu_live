@@ -3599,7 +3599,7 @@ section,
   height: 50px;
   font-size: 14px;
   color: #131313;
-  text-transform: capitalize;
+  /* text-transform: capitalize; */
   border: 1px solid #113163;
   border-radius: 0;
 }

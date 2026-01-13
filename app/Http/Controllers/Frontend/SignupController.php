@@ -9,7 +9,8 @@ use App\Models\Signupform;
 use App\Models\MembershipApplicationform;
  use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\User;
-
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 class SignupController extends Controller
 {
      public function index($id)
@@ -52,24 +53,84 @@ class SignupController extends Controller
         return response()->json(['success' => true]);
     }
 
-    // FINAL SUBMIT
-    public function finalSubmit(Request $request)
-    {
-        $record = MembershipApplicationform::where('user_id', $request->user_id)->first();
+    // // FINAL SUBMIT
+    // public function finalSubmit(Request $request)
+    // {
+    //     $record = MembershipApplicationform::where('user_id', $request->user_id)->first();
 
-        if (!$record || !$record->step1_signup) {
-            return response()->json(['error' => 'Step 1 not completed'], 422);
-        }
+    //     if (!$record || !$record->step1_signup) {
+    //         return response()->json(['error' => 'Step 1 not completed'], 422);
+    //     }
 
-        $record->final_submit_signup = 1;
-        $record->submitted_at = now();
-        $record->save();
+    //     $record->final_submit_signup = 1;
+    //     $record->submitted_at = now();
+    //     $record->save();
 
-        return response()->json(['success' => true]);
+    //     return response()->json(['success' => true]);
+    // }
+
+
+  public function finalSubmit(Request $request)
+{
+    $record = MembershipApplicationform::where('user_id', $request->user_id)->first();
+
+    if (!$record || !$record->step1_signup) {
+        return response()->json(['error' => 'Step 1 not completed'], 422);
     }
 
+    $record->final_submit_signup = 1;
+    $record->submitted_at = now();
+    $record->save();
 
-   
+    // Decode safely
+    $step1 = is_array($record->step1_signup)
+        ? $record->step1_signup
+        : json_decode($record->step1_signup, true);
+
+    $step2 = is_array($record->step2)
+        ? $record->step2
+        : json_decode($record->step2, true);
+
+    $userEmail = $step2['primary_email'] ?? null;
+    $userName  = $step2['full_name'] ?? 'User';
+
+    /* ---------------- PDF DATA ---------------- */
+    $pdf = Pdf::loadView('pdf.direct-debit', [
+        'type'          => $step1['type'],
+        'accountHolder'=> $step1['account_holder'] ?? null,
+        'accountNumber'=> $step1['account_number'] ?? null,
+        'sortCode'     => $step1['sort_code'] ?? null,
+        'bankName'     => $step1['bank_name'] ?? null,
+        'branchName'   => $step1['branch_name'] ?? null,
+        'companyName'  => $step1['company_name'] ?? null,
+        'panNumber'    => $step1['pan_number'] ?? null,
+        'serviceNumber'=> $step1['service_number'],
+        'date'         => now()->format('d F, Y'),
+    ]);
+
+    $pdfFileName = 'Direct_Debit_' . $step1['service_number'] . '.pdf';
+
+    /* ---------------- EMAIL ---------------- */
+    if ($userEmail) {
+        Mail::send('emails.direct-debit', [
+            'name'          => $userName,
+            'type'          => $step1['type'],
+            'serviceNumber'=> $step1['service_number'],
+            'companyName'  => $step1['company_name'] ?? null,
+            'mandateUrl'   => isset($step1['mandate_file'])
+                                ? asset('storage/' . $step1['mandate_file'])
+                                : null,
+        ], function ($message) use ($userEmail, $pdf, $pdfFileName) {
+            $message->to($userEmail)
+                ->subject('Direct Debit Instruction - DDPU')
+                ->attachData($pdf->output(), $pdfFileName);
+        });
+    }
+
+    return response()->json(['success' => true]);
+}
+
+
 
 public function generatePdf($userId)
 {

@@ -68,14 +68,16 @@
                   <ul class="sidebar-submenu">
                     <li><a href="{{ route('files.details') }}" class="{{ request()->routeIs('files.details') ? 'active' : '' }}">Files</a></li>
                      <li><a href="{{ route('transaction.details') }}" class="{{ request()->routeIs('transaction.details') ? 'active' : '' }}">Transactions</a></li>
-                    <li><a href="{{ route('membership.details') }}" class="{{ request()->routeIs('membership.details') ? 'active' : '' }}">Customers </a></li>
-                   <li><a href="{{ route('direct_debit.index') }}" class="{{ request()->routeIs('direct_debit.index') ? 'active' : '' }}">Paperles Signups</a></li>
-                   <li><a href="">Submissions Reminders  </a></li>
-                   <li><a href="">Reports </a></li>
+                    <!-- <li><a href="{{ route('membership.details') }}" class="{{ request()->routeIs('membership.details') ? 'active' : '' }}">Customers </a></li> -->
+                     <li><a href="{{ route('customer-elctronic.details') }}" class="{{ request()->routeIs('customer-elctronic.details') ? 'active' : '' }}">Customers (Elctronic)</a></li>
+                     <li><a href="{{ route('customer-physical.details') }}" class="{{ request()->routeIs('customer-physical.details') ? 'active' : '' }}">Customers (Physical)</a></li>
+                     <li><a href="{{ route('direct_debit.index') }}" class="{{ request()->routeIs('direct_debit.index') ? 'active' : '' }}">Paperles Signups</a></li>
+                   <!-- <li><a href="">Submissions Reminders  </a></li>
+                   <li><a href="">Reports </a></li> -->
                    <!-- <li><a href="">Import from Xero  </a></li>
                    <li><a href="">Zero Settings  </a></li> -->
-                   <li><a href="">Change Password  </a></li>
-                   <li><a href="">Downloads  </a></li>
+                   <!-- <li><a href="">Change Password  </a></li> -->
+                   <!-- <li><a href="">Downloads  </a></li> -->
 
                   </ul>
                 </li>

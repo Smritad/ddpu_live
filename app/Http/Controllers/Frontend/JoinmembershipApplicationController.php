@@ -154,9 +154,10 @@ public function submitApplication(Request $request)
         return response()->json([
             'status' => 'success',
             'message' => 'Application submitted successfully',
-            'application_id' => $application->id,
+            'application_id' => $application->id, // use this in front-end
             'user_id' => $user->id,
         ]);
+
 
     } catch (\Throwable $e) {
         Log::error('submitApplication error', [

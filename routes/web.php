@@ -11,6 +11,9 @@ use App\Http\Controllers\Backend\home\AimDetailsController;
 use App\Http\Controllers\Backend\home\WhychooseDetailsController;
 use App\Http\Controllers\Backend\home\TestimonialsDetailsController;
 use App\Http\Controllers\Backend\home\JoinmembershipDetailsController;
+use App\Http\Controllers\Backend\home\CustomerDetailsController;
+use App\Http\Controllers\Backend\home\CustomerPhysicalDetailsController;
+
 use App\Http\Controllers\Backend\home\FooterDetailsController;
 use App\Http\Controllers\Backend\home\MembershipDetailsController;
 use App\Http\Controllers\Backend\home\FilesDetailsController;
@@ -43,11 +46,27 @@ Route::resource('aim-details', AimDetailsController::class);
 Route::resource('whychoose-details', WhychooseDetailsController::class);
 Route::resource('testimonials-details', TestimonialsDetailsController::class);
 Route::resource('joinmembership-details', JoinmembershipDetailsController::class);
+
 Route::resource('footer-details', FooterDetailsController::class);
 
 //Backend Customer
 Route::get('/membership-detail', [MembershipDetailsController::class, 'index'])->name('membership.details');
 Route::get('/admin/membership/{id}', [MembershipDetailsController::class, 'show'])->name('membership.show');
+Route::get('/customer-details-elctronic', [CustomerDetailsController::class, 'index'])->name('customer-elctronic.details');
+Route::get('/customer-details-physical', [CustomerPhysicalDetailsController::class, 'index'])->name('customer-physical.details');
+Route::post('/customer-electronic/upload', [CustomerDetailsController::class, 'upload'])
+    ->name('customer-electronic.upload');
+
+
+Route::get('/customer-electronic/export/{type}', [CustomerDetailsController::class, 'export'])
+    ->name('customer-electronic.export');
+
+Route::get('/customer-physical/export/{type}', [CustomerPhysicalDetailsController::class, 'export'])
+    ->name('customer-physical.export');
+
+Route::post('/admin/membership/status-update', 
+    [CustomerDetailsController::class, 'updateStatus']
+)->name('membership.status.update');
 
 //Backend Files
 Route::get('/files-detail', [FilesDetailsController::class, 'index'])->name('files.details');
