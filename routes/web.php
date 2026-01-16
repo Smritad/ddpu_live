@@ -20,6 +20,7 @@ use App\Http\Controllers\Backend\home\FilesDetailsController;
 use App\Http\Controllers\Backend\home\PaperlessDetailsController;
 use App\Http\Controllers\Backend\home\SubmissionsRemindersController;
 use App\Http\Controllers\Backend\home\TransactionDetailsController;
+use App\Http\Controllers\FastPayController;
 
 
 //frontend controller
@@ -72,6 +73,8 @@ Route::post('/admin/membership/status-update',
 Route::get('/files-detail', [FilesDetailsController::class, 'index'])->name('files.details');
 Route::post('/files/import',   [FilesDetailsController::class, 'import'])->name('files.import');
 Route::get('/files/export/{id}', [FilesDetailsController::class, 'export'])->name('files.export');
+
+
 
 //Backend Paperless
 Route::get('/paperless-detail', [PaperlessDetailsController::class,'index'])->name('direct_debit.index');
@@ -151,3 +154,13 @@ Route::post('/signup/final-submit', [SignupController::class, 'finalSubmit']);
 
 Route::get('/proxy-bank-validation', [BankValidationController::class, 'validateBank']);
 Route::get('/signup/step2/pdf/{userId}', [SignupController::class, 'generatePdf']);
+
+//fastpay testing
+
+// Route::get('/upload', [FastPayController::class, 'index']);
+// Route::post('/upload', [FastPayController::class, 'upload']);
+// routes/web.php
+
+
+Route::get('/fastpay', [FastPayController::class, 'form']);
+Route::post('/fastpay-upload', [FastPayController::class, 'upload'])->name('fastpay.upload');

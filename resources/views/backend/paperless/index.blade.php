@@ -126,8 +126,9 @@
     <!-- Applications Table -->
     <div class="row">
         <div class="col-md-12">
-            <table class="table table-bordered" id="applicationsTable">
-                <thead>
+             <div class="table-responsive custom-scrollbar">
+        <table class="table table-bordered" id="basic-1">
+            <thead>
                     <tr>
                         <th><input type="checkbox" id="selectAll"></th>
                         <th>Sign Up Date</th>

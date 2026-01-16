@@ -1,17 +1,36 @@
 <?php
+
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class FileDetail extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'file_id','dd_reference','sort_code','account_no','account_name','amount',
-        'bacs_code','invoice_no','title','initial','forename','surname',
-        'salutation_1','salutation_2','address_1','address_2','area','town',
-        'postcode','phone','mobile','email','notes'
+        'file_id',
+        'dd_reference',
+        'sort_code',
+        'account_number',
+        'account_name',
+        'amount',
+        'due_date',
+        'bacs_code',
+        'status',
+        'error_message',
+        'forename',
+        'surname',
+        'initial',
     ];
 
+    protected $casts = [
+        'amount'    => 'decimal:2',
+        'due_date'  => 'date',
+    ];
+
+    // Relationship: Belongs to File
     public function file()
     {
         return $this->belongsTo(File::class);

@@ -69,10 +69,12 @@
            <a href="{{ route('file.details.export') }}" class="btn btn-sm btn-primary">
     Export CSV
 </a>
-
+<br>
+<br>
             <div class="table-responsive">
-              <table class="table table-striped table-bordered" id="fileDetailsTable">
-                <thead class="thead-dark">
+             <div class="table-responsive custom-scrollbar">
+        <table class="table table-bordered" id="basic-1">
+            <thead>
                   <tr>
                     <th>DD Ref</th>
                     <th>Account Name</th>
@@ -129,7 +131,8 @@
     </div>
   </div>
 </div>
-                    </div>
+</div>
+                  </div>
                   </div>
                 </div>
               </div>

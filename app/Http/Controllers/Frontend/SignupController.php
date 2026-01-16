@@ -70,7 +70,9 @@ class SignupController extends Controller
     // }
 
 
-  public function finalSubmit(Request $request)
+ 
+
+public function finalSubmit(Request $request)
 {
     $record = MembershipApplicationform::where('user_id', $request->user_id)->first();
 
@@ -78,11 +80,38 @@ class SignupController extends Controller
         return response()->json(['error' => 'Step 1 not completed'], 422);
     }
 
-    $record->final_submit_signup = 1;
-    $record->submitted_at = now();
-    $record->save();
+    /* ================= GENERATE DD REFERENCE ================= */
+    DB::beginTransaction();
 
-    // Decode safely
+    try {
+        // Lock row to avoid duplicate DD reference
+        $lastRef = MembershipApplicationform::whereNotNull('dd_reference')
+            ->orderBy('id', 'desc')
+            ->lockForUpdate()
+            ->value('dd_reference');
+
+        $lastNumber = 0;
+        if ($lastRef && preg_match('/DDPU-(\d+)/', $lastRef, $matches)) {
+            $lastNumber = (int) $matches[1];
+        }
+
+        $nextNumber = $lastNumber + 1;
+        $ddReference = 'DDPU-' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+
+        // Save final submit data
+        $record->final_submit_signup = 1;
+        $record->submitted_at = now();
+        $record->dd_reference = $ddReference;
+        $record->save();
+
+        DB::commit();
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['error' => 'Unable to generate DD Reference'], 500);
+    }
+
+    /* ================= DECODE DATA ================= */
     $step1 = is_array($record->step1_signup)
         ? $record->step1_signup
         : json_decode($record->step1_signup, true);
@@ -94,30 +123,31 @@ class SignupController extends Controller
     $userEmail = $step2['primary_email'] ?? null;
     $userName  = $step2['full_name'] ?? 'User';
 
-    /* ---------------- PDF DATA ---------------- */
+    /* ================= PDF ================= */
     $pdf = Pdf::loadView('pdf.direct-debit', [
-        'type'          => $step1['type'],
-        'accountHolder'=> $step1['account_holder'] ?? null,
-        'accountNumber'=> $step1['account_number'] ?? null,
-        'sortCode'     => $step1['sort_code'] ?? null,
-        'bankName'     => $step1['bank_name'] ?? null,
-        'branchName'   => $step1['branch_name'] ?? null,
-        'companyName'  => $step1['company_name'] ?? null,
-        'panNumber'    => $step1['pan_number'] ?? null,
-        'serviceNumber'=> $step1['service_number'],
-        'date'         => now()->format('d F, Y'),
+        'type'           => $step1['type'],
+        'accountHolder' => $step1['account_holder'] ?? null,
+        'accountNumber' => $step1['account_number'] ?? null,
+        'sortCode'      => $step1['sort_code'] ?? null,
+        'bankName'      => $step1['bank_name'] ?? null,
+        'branchName'    => $step1['branch_name'] ?? null,
+        'companyName'   => $step1['company_name'] ?? null,
+        'serviceNumber' => $step1['service_number'],
+        'ddReference'   => $ddReference,
+        'date'          => now()->format('d F, Y'),
     ]);
 
-    $pdfFileName = 'Direct_Debit_' . $step1['service_number'] . '.pdf';
+    $pdfFileName = 'Direct_Debit_' . $ddReference . '.pdf';
 
-    /* ---------------- EMAIL ---------------- */
+    /* ================= EMAIL ================= */
     if ($userEmail) {
         Mail::send('emails.direct-debit', [
-            'name'          => $userName,
-            'type'          => $step1['type'],
-            'serviceNumber'=> $step1['service_number'],
-            'companyName'  => $step1['company_name'] ?? null,
-            'mandateUrl'   => isset($step1['mandate_file'])
+            'name'           => $userName,
+            'type'           => $step1['type'],
+            'serviceNumber' => $step1['service_number'],
+            'ddReference'   => $ddReference,
+            'companyName'   => $step1['company_name'] ?? null,
+            'mandateUrl'    => isset($step1['mandate_file'])
                                 ? asset('storage/' . $step1['mandate_file'])
                                 : null,
         ], function ($message) use ($userEmail, $pdf, $pdfFileName) {
@@ -127,9 +157,11 @@ class SignupController extends Controller
         });
     }
 
-    return response()->json(['success' => true]);
+    return response()->json([
+        'success'      => true,
+        'dd_reference' => $ddReference
+    ]);
 }
-
 
 
 public function generatePdf($userId)

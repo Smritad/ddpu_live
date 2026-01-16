@@ -58,72 +58,75 @@
                             Export CSV
                         </a>
                     </div>
+                    <br>
 
                     <div class="table-responsive custom-scrollbar">
-                    <table class="display table table-striped" id="basic-1">
-                        <table class="table table-bordered table-striped">
+                    <div class="table-responsive custom-scrollbar">
+                        <table class="table table-bordered" id="basic-1">
                             <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>DD Reference</th>
-                                     <th>Payment Plan</th>
-                                    <th>Account Name</th>
-                                    <th>Sort Code</th>
-                                    <th>Account Number</th>
-                                    <th>Date</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                @forelse($memberships as $key => $member)
-
-                                    @php
-                                        $step1 = is_array($member->step1_signup)
-                                            ? $member->step1_signup
-                                            : json_decode($member->step1_signup, true);
-                                    @endphp
-
+                            
                                     <tr>
-                                        <td>{{ $key + 1 }}</td>
-
-                                        <td>{{ $step1['service_number'] ?? '-' }}</td>
-                                        <td>{{ $step1['payment_plan'] ?? '-' }}</td>
-
-                                        <td>{{ $step1['account_holder'] ?? '-' }}</td>
-
-                                        <td>{{ $step1['sort_code'] ?? '-' }}</td>
-
-                                        <td>{{ $step1['account_number'] ?? '-' }}</td>
-
-                                        <td>
-                                            {{ $member->submitted_at
-                                                ? $member->submitted_at->format('d M Y')
-                                                : $member->created_at->format('d M Y') }}
-                                        </td>
-
-                                        <td>
-                                              <select class="form-select form-select-sm status-change"
-                                                      data-id="{{ $member->id }}">
-                                                  <option value="">Select</option>
-                                                  <option value="pending"   {{ $member->status=='pending'?'selected':'' }}>Pending</option>
-                                                  <option value="delivered" {{ $member->status=='delivered'?'selected':'' }}>Delivered</option>
-                                                  <option value="expired"   {{ $member->status=='expired'?'selected':'' }}>Expired</option>
-                                              </select>
-                                          </td>
-
+                                        <th>#</th>
+                                        <th>DD Reference</th>
+                                        <th>Payment Plan</th>
+                                        <th>Account Name</th>
+                                        <th>Sort Code</th>
+                                        <th>Account Number</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
                                     </tr>
+                                </thead>
 
-                                @empty
-                                    <tr>
-                                        <td colspan="7" class="text-center">No records found</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
+                                <tbody>
+                                    @forelse($memberships as $key => $member)
+
+                                        @php
+                                        //dd($memberships);
+                                            $step1 = is_array($member->step1_signup)
+                                                ? $member->step1_signup
+                                                : json_decode($member->step1_signup, true);
+                                        @endphp
+
+                                        <tr>
+                                            <td>{{ $key + 1 }}</td>
+
+                                            <td>{{ $member->dd_reference ?? '-' }}</td>
+                                            <td>{{ $step1['payment_plan'] ?? '-' }}</td>
+
+                                            <td>{{ $step1['account_holder'] ?? '-' }}</td>
+
+                                            <td>{{ $step1['sort_code'] ?? '-' }}</td>
+
+                                            <td>{{ $step1['account_number'] ?? '-' }}</td>
+
+                                            <td>
+                                                {{ $member->submitted_at
+                                                    ? $member->submitted_at->format('d M Y')
+                                                    : $member->created_at->format('d M Y') }}
+                                            </td>
+
+                                            <td>
+                                                <select class="form-select form-select-sm status-change"
+                                                        data-id="{{ $member->id }}">
+                                                    <option value="">Select</option>
+                                                    <option value="pending"   {{ $member->status=='pending'?'selected':'' }}>Pending</option>
+                                                    <option value="delivered" {{ $member->status=='delivered'?'selected':'' }}>Delivered</option>
+                                                    <option value="expired"   {{ $member->status=='expired'?'selected':'' }}>Expired</option>
+                                                </select>
+                                            </td>
+
+                                        </tr>
+
+                                    @empty
+                                        <tr>
+                                            <td colspan="7" class="text-center">No records found</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+
+                            
                         </table>
-
-                          
-                    </table>
 
 
                     </div>
@@ -133,10 +136,12 @@
             </div>
           </div>
         </div>
+        </div>
             <!-- footer start-->
              @include('components.backend.footer')
       </div>
     </div>
+
 
         @include('components.backend.main-js')
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

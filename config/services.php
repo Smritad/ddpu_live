@@ -28,9 +28,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 'fastpay' => [
-    'url'   => env('FASTPAY_API_URL'),
-    'token' => env('FASTPAY_BEARER_TOKEN'),
+    'url'   => env('FASTPAY_BASE_URL', 'https://testportal.fastpayltd.co.uk/extensions/'),
+    'token' => env('FASTPAY_TOKEN'),
 ],
+
 
     'slack' => [
         'notifications' => [

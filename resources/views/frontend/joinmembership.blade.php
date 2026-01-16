@@ -441,7 +441,13 @@
 
                         <div class="app-form-title-subsec">
                             <h4>Professional Negligence Indemnity</h4>
-                            <p>It is a legal and regulatory requirement [...]</p>
+                            <p>It is a legal and regulatory requirement that medical and dental professionals are fully insured or indemnified in respect of any civil or compensation claims that arises from their professional work. This is called Professional Negligence indemnity.</p>
+<br>
+                            <p>The responsibility to ensure that you have adequate Professional Negligence indemnity rests solely with you. Our cover is strictly limited to providing professional defence. Our standard membership does not provide Professional Negligence indemnity for any work.</p>
+<br>
+                            <p>Professional Negligence indemnity for NHS work is usually provided by NHS’s own indemnity scheme. Therefore, you would usually require own Professional Negligence indemnity only for work outside the NHS (private practice) or for work in the NHS that is done outside of the employment contract (Category 2 or Fee-Paying work). If you are unsure if you have adequate Professional Negligence indemnity for the work you do or are not sure whether you need professional negligence indemnity, please write to us and seek advice.</p>
+<br>
+                            <p>If you do require Professional Negligence indemnity for any work, we may be able to refer you to specialist insurance brokers from who you may separately purchase this cover.</p>
                         </div>
 
                         <hr>
@@ -500,7 +506,7 @@
 
                         <div class="app-form-title-subsec">
                             <h4>Declaration of Pre-existing professional Issues</h4>
-                            <p>We do not provide cover for professional issues [...]</p>
+                            <p>We do not provide cover for professional issues that have existed before commencement of membership. Please make a full declaration of existing or previous issues:</p>
                         </div>
 
                         <hr>
@@ -508,19 +514,19 @@
                         <form id="step5Form" class="row g-3">
 
                             <div class="col-12">
-                                <label class="form-label"><strong>Q.</strong> Please provide details [...]</label>
+                                <label class="form-label"><strong>Q.</strong> Please provide details of any concerns raised about your conduct, capability or health in the past five (5) years. This should include any formal and/or disciplinary investigation by your contracting body, your employer or those who hold your performer’s list registration.</label>
                                 <textarea class="form-control app-form-textarea-custom-sec" id="pre-issue-q31"
                                     rows="4" placeholder="Enter details here..." name="issue_q31"></textarea>
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label"><strong>Q.</strong> Are you aware of any matters [...]</label>
+                                <label class="form-label"><strong>Q.</strong> Are you aware of any matters that may result in or have resulted in a claim or complaint being made against you? Please provide full details. Not disclosing information that we consider relevant may invalidate your membership. Therefore, if you are unsure if certain information you have would qualify to be stated then please do state that here:</label>
                                 <textarea class="form-control app-form-textarea-custom-sec" id="pre-issue-q32"
                                     rows="4" placeholder="Enter details here..." name="issue_q32"></textarea>
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label"><strong>Q.</strong> Have you been subject to [...]</label>
+                                <label class="form-label"><strong>Q.</strong> Have you been subject to any Employer’s disciplinary investigation, inquiry or other proceedings, GMC/GDC investigation, inquiry or other proceedings, Coroners’ Inquest or Fatal Accident Inquiry and/or criminal prosecution in the past ten (10) years?</label>
                                 <textarea class="form-control app-form-textarea-custom-sec" id="pre-issue-q33"
                                     rows="4" placeholder="Enter details here..." name="issue_q33"></textarea>
                             </div>
@@ -562,13 +568,13 @@
                         <form id="step6Form" class="row g-3">
 
                             <div class="col-12">
-                                <label class="form-label"><strong>Q.</strong> Have any claims [...]</label>
+                                <label class="form-label"><strong>Q.</strong> Have any claims or complaints relating to your professional work been made or threatened against you in the past three (3) years? If so, please provide details:</label>
                                 <textarea class="form-control app-form-textarea-custom-sec" id="claims-q1"
                                     rows="4" placeholder="Enter details here..." name="claims_q1" required></textarea>
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label"><strong>Q.</strong> Are you aware of any acts [...]</label>
+                                <label class="form-label"><strong>Q.</strong> Are you aware of any acts, errors, omissions, incidents, events or circumstances which may give rise to a claim, investigation or complaint against you? If so, please provide details:</label>
                                 <textarea class="form-control app-form-textarea-custom-sec" id="claims-q2"
                                     rows="4" placeholder="Enter details here..." name="claims_q2" required></textarea>
                             </div>
@@ -578,12 +584,12 @@
                             <div class="app-form-title-subsec"><h4>Previous Union or Defence Organisation Membership</h4></div>
 
                             <div class="col-12">
-                                <label class="form-label"><strong>Q.</strong> Have you ever had membership [...]</label>
+                                <label class="form-label"><strong>Q.</strong> Have you ever had membership or cover cancelled, declined or refused to be renewed by a professional membership organisation or provider of professional indemnity? If so, please provide details:</label>
                                 <textarea class="form-control app-form-textarea-custom-sec"
                                     rows="4" placeholder="Enter details here..." name="membership_cancelled"></textarea>
                             </div>
 
-                            <div class="col-12"><p><strong>Q.</strong> Please provide details [...]</p></div>
+                            <div class="col-12"><p><strong>Q.</strong> Please provide details of the following in respect of any policy or membership that you have or which is expiring at the time of joining our membership:</p></div>
 
                             <div class="col-md-6 mb-3">
                                 <input type="text" class="form-control" id="prev-membership-name"

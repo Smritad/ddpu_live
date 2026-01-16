@@ -25,7 +25,8 @@ class MembershipApplicationform extends Model
         'ip_address',
         'submitted_at',
         'step1_signup',
-        'final_submit_signup'
+        'final_submit_signup',
+        'dd_reference'
     ];
 
     protected $casts = [

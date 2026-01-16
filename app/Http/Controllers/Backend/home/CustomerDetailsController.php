@@ -71,56 +71,76 @@ public function updateStatus(Request $request)
 
 
 
-
-public function export($type, $recordType = 'electronic') // default electronic
+public function export($type, $recordType = 'electronic') // electronic | physical
 {
-    // Filter by type in JSON
-    $memberships = MembershipApplicationform::whereJsonContains('step1_signup->type', $recordType)
+    $memberships = MembershipApplicationform::whereJsonContains(
+            'step1_signup->type',
+            $recordType
+        )
         ->orderByDesc('id')
         ->get();
 
     if ($type === 'csv') {
-        return new StreamedResponse(function () use ($memberships) {
+        return new StreamedResponse(function () use ($memberships, $recordType) {
             $handle = fopen('php://output', 'w');
 
-            // Header row
+            /* ================= HEADER ================= */
             fputcsv($handle, [
                 'DD Reference',
                 'Payment Plan',
-                'Account Name',
+                'Account / Company Name',
                 'Sort Code',
                 'Account Number',
                 'Date',
                 'Status'
             ]);
 
+            /* ================= DATA ================= */
             foreach ($memberships as $member) {
                 $step1 = is_array($member->step1_signup)
                     ? $member->step1_signup
                     : json_decode($member->step1_signup, true);
 
                 fputcsv($handle, [
-                    $step1['service_number'] ?? '',
+                    $member->dd_reference ?? '', // ✅ FIXED
                     $step1['payment_plan'] ?? '',
-                    $step1['account_holder'] ?? '',
-                    $step1['sort_code'] ?? '',
-                    $step1['account_number'] ?? '',
-                    optional($member->submitted_at)->format('d-m-Y'),
-                    $member->status ?? '', // ✅ use DB column
+
+                    // Name based on type
+                    $recordType === 'electronic'
+                        ? ($step1['account_holder'] ?? '')
+                        : ($step1['company_name'] ?? ''),
+
+                    // Bank details only for electronic
+                    $recordType === 'electronic'
+                        ? ($step1['sort_code'] ?? '')
+                        : '',
+
+                    $recordType === 'electronic'
+                        ? ($step1['account_number'] ?? '')
+                        : '',
+
+                    optional($member->submitted_at)->format('d-m-Y')
+                        ?? optional($member->created_at)->format('d-m-Y'),
+
+                    $member->status ?? '',
                 ]);
             }
 
             fclose($handle);
+
         }, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="customer-' . $recordType . '.csv"',
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition'=> 'attachment; filename="customer-' . $recordType . '.csv"',
         ]);
     }
 
-    // Excel export
-    return Excel::download(new \App\Exports\CustomerElectronicExport($memberships), 
-                           'customer-' . $recordType . '.xlsx');
+    /* ================= EXCEL EXPORT ================= */
+    return Excel::download(
+        new \App\Exports\CustomerExport($memberships, $recordType),
+        'customer-' . $recordType . '.xlsx'
+    );
 }
+
 
 
     public function collection()

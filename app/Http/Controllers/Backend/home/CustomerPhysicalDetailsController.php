@@ -50,7 +50,7 @@ public function export($type)
         return new StreamedResponse(function () use ($memberships) {
             $handle = fopen('php://output', 'w');
 
-            // Header row
+            /* ================= HEADER ================= */
             fputcsv($handle, [
                 'DD Reference',
                 'Payment Plan',
@@ -64,29 +64,34 @@ public function export($type)
                     ? $member->step1_signup
                     : json_decode($member->step1_signup, true);
 
-                // Prepare file URL
-                $fileUrl = isset($step1['file_name']) && $step1['file_name']
+                /* FILE URL */
+                $fileUrl = !empty($step1['file_name'])
                     ? asset('direct-debit/' . $step1['file_name'])
                     : '';
 
                 fputcsv($handle, [
-                    $step1['service_number'] ?? '',
+                    $member->dd_reference ?? '', // ✅ FIXED
                     $step1['payment_plan'] ?? '',
-                    $fileUrl, // ✅ CSV cannot have HTML, just URL
-                    optional($member->submitted_at)->format('d-m-Y'),
+                    $fileUrl,
+                    optional($member->submitted_at)->format('d-m-Y')
+                        ?? optional($member->created_at)->format('d-m-Y'),
                     $member->status ?? '',
                 ]);
             }
 
             fclose($handle);
+
         }, 200, [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="customer-physical.csv"',
+            'Content-Type'        => 'text/csv',
+            'Content-Disposition'=> 'attachment; filename="customer-physical.csv"',
         ]);
     }
 
-    // Excel export (physical type)
-    return Excel::download(new \App\Exports\CustomerPhysicalExport($memberships), 'customer-physical.xlsx');
+    /* ================= EXCEL EXPORT ================= */
+    return Excel::download(
+        new \App\Exports\CustomerPhysicalExport($memberships),
+        'customer-physical.xlsx'
+    );
 }
 
 

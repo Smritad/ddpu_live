@@ -56,8 +56,9 @@
                         </a>
                     </div>
                     <div class="table-responsive custom-scrollbar">
-                    <table class="display table table-striped" id="basic-1">
-                        <table class="table table-bordered table-striped">
+                    <div class="table-responsive custom-scrollbar">
+                    <table class="table table-bordered" id="basic-1">
+            
                             <thead>
                                 <tr>
                                     <th>#</th>
@@ -82,7 +83,7 @@
                                     <tr>
                                         <td>{{ $key + 1 }}</td>
 
-                                        <td>{{ $step1['service_number'] ?? '-' }}</td>
+                                        <td>{{ $member->dd_reference ?? '-' }}</td>
                                         <td>{{ $step1['payment_plan'] ?? '-' }}</td>
                                         <td>
                                             @if(!empty($step1['file_name']))
@@ -124,7 +125,7 @@
                           
                     </table>
 
-
+</div>
                     </div>
                   </div>
                 </div>
