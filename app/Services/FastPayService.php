@@ -54,4 +54,39 @@ class FastPayService
                 'Status' => $status,
             ]);
     }
+
+    /**
+     * FastPay only returns customers one status at a time, so we query each
+     * valid status and merge into a single list (mirrors the portal's
+     * Customers tab which shows all customers with their status).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getAllCustomers(): array
+    {
+        $statuses = ['Live', 'Cancelled', 'Expired', 'Suspended'];
+        $all = [];
+
+        foreach ($statuses as $status) {
+            $resp = $this->getCustomersByStatus($status);
+            foreach (($resp->json('Data') ?? []) as $row) {
+                $all[] = $row;
+            }
+        }
+
+        return $all;
+    }
+
+    /**
+     * Full detail for one customer: profile + transaction history.
+     * Returns the FastPay "Data" payload ({ Customer: {...}, Transactions: [...] }).
+     *
+     * @return array<string, mixed>
+     */
+    public function getCustomerDetail(string $ddReference): array
+    {
+        $resp = $this->getCustomer(['DDReference' => $ddReference]);
+
+        return $resp->json('Data') ?? ['Customer' => null, 'Transactions' => []];
+    }
 }

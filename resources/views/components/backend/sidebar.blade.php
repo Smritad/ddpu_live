@@ -142,6 +142,7 @@
                   <ul class="sidebar-submenu">
                     <li><a href="{{ route('files.details') }}" class="{{ request()->routeIs('files.details') ? 'active' : '' }}">Files</a></li>
                      <li><a href="{{ route('transaction.details') }}" class="{{ request()->routeIs('transaction.details') ? 'active' : '' }}">Transactions</a></li>
+                     <li><a href="{{ route('fastpay.customers') }}" class="{{ request()->routeIs('fastpay.customers') ? 'active' : '' }}">Customers</a></li>
                     <!-- <li><a href="{{ route('membership.details') }}" class="{{ request()->routeIs('membership.details') ? 'active' : '' }}">Customers </a></li> -->
                      <li><a href="{{ route('customer-elctronic.details') }}" class="{{ request()->routeIs('customer-elctronic.details') ? 'active' : '' }}">User Details</a></li>
                      <!--<li><a href="{{ route('customer-physical.details') }}" class="{{ request()->routeIs('customer-physical.details') ? 'active' : '' }}">Customers (Physical)</a></li>-->

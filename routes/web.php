@@ -190,6 +190,13 @@ Route::get('/files/export/{id}', [FilesDetailsController::class, 'export'])->nam
 
 Route::get('/download-pdf', [FilesDetailsController::class, 'generatePDF']);
 
+//Backend FastPay Customers (live data from FastPay portal API)
+Route::get('/fastpay/customers', [\App\Http\Controllers\Backend\home\FastpayCustomerController::class, 'index'])
+    ->name('fastpay.customers');
+Route::get('/fastpay/customers/{ddReference}', [\App\Http\Controllers\Backend\home\FastpayCustomerController::class, 'show'])
+    ->where('ddReference', '.*')
+    ->name('fastpay.customers.show');
+
 //Backend Paperless
 Route::get('/paperless-detail', [PaperlessDetailsController::class,'index'])->name('direct_debit.index');
 Route::get('/create', [PaperlessDetailsController::class,'create'])->name('direct_debit.create');
