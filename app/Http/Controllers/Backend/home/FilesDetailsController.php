@@ -283,36 +283,9 @@ public function import(Request $request)
     );
 }
 
-public function syncFastpayStatus($fileId)
-{
-    $file = File::findOrFail($fileId);
-
-    if (!$file->fastpay_file_id) {
-        return;
-    }
-
-    $response = Http::withHeaders([
-        'Bearer-Token' => config('services.fastpay.token'),
-        'Accept'       => 'application/json',
-    ])->get(config('services.fastpay.url') . '/api/Transactions?FileId=' . $file->fastpay_file_id);
-
-    $data = $response->json();
-
-    if (!isset($data['Data'])) {
-        return;
-    }
-
-    foreach ($data['Data'] as $txn) {
-
-        FileDetail::where('file_id', $file->id)
-            ->where('dd_reference', $txn['DdReference'] ?? null)
-            ->update([
-                'status' => strtolower($txn['Status'] ?? 'processing')
-            ]);
-    }
-}
-
-
+    // NOTE: status syncing lives in the `sync:fastpay-status` command, which uses
+    // FastPay's remittance report. FastPay's GET /api/Transactions endpoint is
+    // broken (HTTP 500), so the old per-file sync method was removed.
 
     public function generatePDF()
     {
