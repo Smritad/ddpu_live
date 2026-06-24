@@ -28,8 +28,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 'fastpay' => [
-    'url'   => env('FASTPAY_BASE_URL', 'https://testportal.fastpayltd.co.uk/extensions/'),
-    'token' => env('FASTPAY_TOKEN'),
+    'url'       => env('FASTPAY_BASE_URL', 'https://testportal.fastpayltd.co.uk/extensions/'),
+    'token'     => env('FASTPAY_TOKEN'),
+    'client_id' => env('FASTPAY_CLIENT_ID', '275708'),
 ],
 
 

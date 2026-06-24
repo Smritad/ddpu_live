@@ -133,7 +133,7 @@ public function import(Request $request)
             $payload = [
                 "MessageControl" => ["Version" => "1.0"],
                 "Data" => [
-                    "ClientID"         => "275708",
+                    "ClientID"         => config('services.fastpay.client_id'),
                     "Filename"         => $fastpayFileName,
                     "InternalFilename" => $fastpayFileName,
                     "FileContent"      => $base64Content,
