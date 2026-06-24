@@ -41,6 +41,9 @@ class MembershipApplicationform extends Model
 
         'final_status' => 'boolean',
         'submitted_at' => 'datetime',
+        'start_date'   => 'datetime',
+        'end_date'     => 'datetime',
+        'mail_trigger_date' => 'datetime',
     ];
 
     /**
