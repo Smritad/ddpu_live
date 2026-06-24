@@ -29,9 +29,11 @@
     .fp-modal-head h5{margin:0;font-size:16px;font-weight:600;color:#fff;}
     .fp-modal-close{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;line-height:1;}
     .fp-modal-body{padding:20px 22px;}
-    .fp-sub{font-size:13px;color:#6b7280;margin:16px 0 8px;font-weight:700;}
+    .fp-sub{font-size:14px;color:#374151;margin:18px 0 10px;font-weight:600;font-style:italic;text-align:center;}
     .fp-meta{font-size:14px;margin-bottom:6px;}
     .fp-loading{text-align:center;padding:30px;color:#6b7280;}
+    .fp-modal-body .table{font-size:13px;margin-bottom:0;}
+    .fp-modal-body .table th{background:#f9fafb;white-space:nowrap;}
 </style>
 
 <div class="page-body">
@@ -96,10 +98,9 @@
                                             <td>{{ $date }}</td>
                                             <td><span class="fp-badge {{ $cls }}">{{ $status }}</span></td>
                                             <td>
-                                                <button type="button" class="btn btn-outline-primary btn-sm"
-                                                        onclick="fpViewCustomer(@js($ref))">
-                                                    <i class="fa fa-eye"></i> View
-                                                </button>
+                                                <button type="button" class="btn btn-primary btn-sm"
+                                                        style="color:#fff;white-space:nowrap;padding:5px 16px;"
+                                                        onclick="fpViewCustomer(@js($ref))">View</button>
                                             </td>
                                         </tr>
                                     @endforeach
@@ -144,7 +145,7 @@ function fpViewCustomer(ref){
         .then(r => r.json())
         .then(res => {
             if(!res.success){ throw new Error(res.message || 'Failed to load'); }
-            document.getElementById('fpModalBody').innerHTML = fpRender(res.customer, res.transactions);
+            document.getElementById('fpModalBody').innerHTML = fpRender(res.customer, res.accounts, res.transactions);
         })
         .catch(e => {
             document.getElementById('fpModalBody').innerHTML =
@@ -154,20 +155,44 @@ function fpViewCustomer(ref){
 
 function fpEsc(s){ return (s==null?'':String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-function fpRender(cust, txns){
+function fpRender(cust, accounts, txns){
     let html = '';
     if(cust){
-        html += '<div class="fp-meta"><b>DD Reference:</b> ' + fpEsc(cust.DDReference) + '</div>'
-              + '<div class="fp-meta"><b>Status:</b> ' + fpEsc(cust.Status) + '</div>'
-              + '<div class="fp-meta"><b>Current Collection Total:</b> £' + Number(cust.CurrentCollectionTotal||0).toFixed(2) + '</div>';
+        html += '<div class="fp-meta"><b>DD Reference:</b> ' + fpEsc(cust.DDReference)
+              + ' &nbsp;|&nbsp; <b>Status:</b> ' + fpEsc(cust.Status)
+              + ' &nbsp;|&nbsp; <b>Current Collection Total:</b> £' + Number(cust.CurrentCollectionTotal||0).toFixed(2)
+              + '</div>';
     }
+
+    // Accounts section (like FastPay)
+    html += '<p class="fp-sub">Accounts</p>';
+    if(accounts && accounts.length){
+        html += '<div class="table-responsive custom-scrollbar"><table class="table table-bordered"><thead><tr>'
+              + '<th>Sort Code</th><th>Account Number</th><th>Account Name</th><th>From</th><th>Status</th>'
+              + '</tr></thead><tbody>';
+        accounts.forEach(a => {
+            const sc = 'fp-' + (a.status||'').toLowerCase();
+            html += '<tr>'
+                + '<td>' + fpEsc(a.sort_code) + '</td>'
+                + '<td>' + fpEsc(a.account_number) + '</td>'
+                + '<td>' + fpEsc(a.account_name) + '</td>'
+                + '<td>' + fpEsc(a.from) + '</td>'
+                + '<td><span class="fp-badge ' + sc + '">' + fpEsc(a.status) + '</span></td>'
+                + '</tr>';
+        });
+        html += '</tbody></table></div>';
+    } else {
+        html += '<div class="alert alert-light" style="font-size:13.5px;">No account information.</div>';
+    }
+
+    // Transactions section
     html += '<p class="fp-sub">Transactions</p>';
     if(!txns || !txns.length){
         html += '<div class="alert alert-light" style="font-size:13.5px;">No transactions for this customer yet.</div>';
         return html;
     }
-    html += '<div class="table-responsive custom-scrollbar"><table class="table table-bordered" style="font-size:13px;"><thead><tr>'
-          + '<th>Submission Date</th><th>Amount</th><th>BACS</th><th>Account Name</th><th>File</th><th>Status</th>'
+    html += '<div class="table-responsive custom-scrollbar"><table class="table table-bordered"><thead><tr>'
+          + '<th>Submission Date</th><th>Amount</th><th>Bacs Type</th><th>Status</th>'
           + '</tr></thead><tbody>';
     txns.forEach(t => {
         const sc = t.status === 'Paid' ? 'fp-paid' : (t.status === 'Failed' ? 'fp-failed' : 'fp-suspended');
@@ -175,8 +200,6 @@ function fpRender(cust, txns){
             + '<td>' + fpEsc(t.submission_date) + '</td>'
             + '<td>£' + Number(t.amount||0).toFixed(2) + '</td>'
             + '<td>' + fpEsc(t.bacs_code) + '</td>'
-            + '<td>' + fpEsc(t.account_name) + '</td>'
-            + '<td>' + fpEsc(t.file_name) + '</td>'
             + '<td><span class="fp-badge ' + sc + '">' + fpEsc(t.status) + '</span></td>'
             + '</tr>';
     });

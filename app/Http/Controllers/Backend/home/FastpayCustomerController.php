@@ -40,12 +40,15 @@ class FastpayCustomerController extends Controller
     public function show(string $ddReference)
     {
         try {
-            $data = $this->fastpay->getCustomerDetail($ddReference);
+            $data         = $this->fastpay->getCustomerDetail($ddReference);
+            $transactions = $data['Transactions'] ?? [];
+            $custStatus   = $data['Customer']['Status'] ?? '';
 
             return response()->json([
                 'success'      => true,
                 'customer'     => $data['Customer'] ?? null,
-                'transactions' => $this->normaliseTransactions($data['Transactions'] ?? []),
+                'accounts'     => $this->buildAccounts($transactions, $custStatus),
+                'transactions' => $this->normaliseTransactions($transactions),
             ]);
         } catch (\Throwable $e) {
             Log::error('FastPay customer detail failed', ['ref' => $ddReference, 'error' => $e->getMessage()]);
@@ -55,6 +58,53 @@ class FastpayCustomerController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * FastPay's GetCustomer returns CustomerAccounts as null, so we derive the
+     * bank account(s) from the transaction history (unique sort code + account
+     * number). "From" is the earliest submission seen for that account.
+     */
+    private function buildAccounts(array $transactions, string $custStatus): array
+    {
+        $accounts = [];
+
+        foreach ($transactions as $t) {
+            $sort = $this->padSortCode($t['SortCode'] ?? '');
+            $acc  = $this->padAccount($t['AccountNumber'] ?? '');
+            $key  = $sort . '|' . $acc;
+            $sub  = $t['SubmissionDate'] ?? null;
+
+            if (!isset($accounts[$key])) {
+                $accounts[$key] = [
+                    'sort_code'      => $sort,
+                    'account_number' => $acc,
+                    'account_name'   => $t['CustomerAccountName'] ?? '',
+                    'from_raw'       => $sub,
+                    'status'         => $custStatus,
+                ];
+            } elseif ($sub && (empty($accounts[$key]['from_raw']) || $sub < $accounts[$key]['from_raw'])) {
+                $accounts[$key]['from_raw'] = $sub;
+            }
+        }
+
+        return array_values(array_map(function ($a) {
+            $a['from'] = $this->formatDate($a['from_raw'] ?? null);
+            unset($a['from_raw']);
+            return $a;
+        }, $accounts));
+    }
+
+    private function padSortCode($v): string
+    {
+        $v = preg_replace('/\D/', '', (string) $v);
+        return $v === '' ? '' : str_pad($v, 6, '0', STR_PAD_LEFT);
+    }
+
+    private function padAccount($v): string
+    {
+        $v = preg_replace('/\D/', '', (string) $v);
+        return $v === '' ? '' : str_pad($v, 8, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -68,14 +118,19 @@ class FastpayCustomerController extends Controller
      */
     private function normaliseTransactions(array $transactions): array
     {
+        // Newest first, like the FastPay portal.
+        usort($transactions, function ($a, $b) {
+            return strcmp($b['SubmissionDate'] ?? '', $a['SubmissionDate'] ?? '');
+        });
+
         return array_map(function ($t) {
             return [
                 'submission_date' => $this->formatDate($t['SubmissionDate'] ?? null),
                 'amount'          => (float) ($t['Amount'] ?? 0),
                 'bacs_code'       => $t['BacsCode'] ?? '',
                 'account_name'    => $t['CustomerAccountName'] ?? '',
-                'sort_code'       => $t['SortCode'] ?? '',
-                'account_number'  => $t['AccountNumber'] ?? '',
+                'sort_code'       => $this->padSortCode($t['SortCode'] ?? ''),
+                'account_number'  => $this->padAccount($t['AccountNumber'] ?? ''),
                 'file_name'       => $t['ImportFileName'] ?? '',
                 'status'          => $this->statusLabel($t),
             ];
