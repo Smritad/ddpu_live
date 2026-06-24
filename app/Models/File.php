@@ -18,6 +18,7 @@ class File extends Model
         'total_amount',
         'status',
         'fastpay_response',
+        'fastpay_file_id',
     ];
 
     protected $casts = [

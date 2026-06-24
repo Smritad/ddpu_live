@@ -944,28 +944,57 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('filter-status').value='';
   document.querySelectorAll('table tbody tr').forEach(function(row){ row.style.display=''; });
  }
+// ── Editable payment fields (account holder / sort code / account number) ──
+ document.querySelectorAll('.editable-field').forEach(function(input){
+  input.addEventListener('change', function(){
+   var id    = this.dataset.id;
+   var field = this.dataset.field;
+   var value = this.value;
+   var el    = this;
 
- // ── Export CSV ────────────────────────────────────────────────────────────
- document.getElementById('export-csv').addEventListener('click',function(e){
-  e.preventDefault();
-  var rows=[['#','DD Ref','Name','Status','End Date','Renewal Status','Renewal Date'].join(',')];
-  document.querySelectorAll('table tbody tr').forEach(function(row){
-   if(row.style.display==='none'||row.cells.length<=1) return;
-   rows.push([
-    row.cells[0]?row.cells[0].textContent.trim():'',
-    row.cells[1]?row.cells[1].textContent.trim():'',
-    row.cells[3]?row.cells[3].textContent.trim():'',
-    row.dataset.status||'',
-    row.dataset.expiryFmt||'',
-    row.dataset.renewalStatus||'',
-    row.dataset.renewalDate||'',
-   ].map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(','));
+   fetch("{{ route('admin.member.updatePayment') }}", {
+    method:'POST',
+    headers:{'Content-Type':'application/json','X-CSRF-TOKEN':'{{ csrf_token() }}'},
+    body:JSON.stringify({ id:id, field:field, value:value })
+   })
+   .then(r=>r.json())
+   .then(function(data){
+    if(data && data.success){
+     el.classList.add('changed');
+     Toast.fire({icon:'success', title:'Updated'});
+    } else {
+     Toast.fire({icon:'error', title:(data&&data.message)||'Update failed'});
+    }
+   })
+   .catch(function(){ Toast.fire({icon:'error', title:'Request failed'}); });
   });
-  var blob=new Blob([rows.join('\n')],{type:'text/csv'});
-  var a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='members-export.csv';
-  a.click();
+ });
+ // ── Export CSV ────────────────────────────────────────────────────────────
+// ── Server-side Export (CSV + Report) ─────────────────────────────────────
+ function buildExportUrl(type){
+  var params = new URLSearchParams();
+  var rs = document.getElementById('filter-renewal-status').value;
+  var rf = document.getElementById('filter-renewal-from').value;
+  var rt = document.getElementById('filter-renewal-to').value;
+  var st = document.getElementById('filter-status').value;
+  if(rs) params.append('renewal_status', rs);
+  if(rf) params.append('renewal_from',   rf);
+  if(rt) params.append('renewal_to',     rt);
+  if(st) params.append('status',         st);
+
+  var base = "{{ route('customer-electronic.export', ['type' => '__T__']) }}".replace('__T__', type);
+  var qs = params.toString();
+  return qs ? base + '?' + qs : base;
+ }
+
+ document.getElementById('export-report').addEventListener('click', function(e){
+  e.preventDefault();
+  window.location.href = buildExportUrl('report');
+ });
+
+ document.getElementById('export-csv').addEventListener('click', function(e){
+  e.preventDefault();
+  window.location.href = buildExportUrl('csv');
  });
 
 });

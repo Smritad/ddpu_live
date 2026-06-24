@@ -115,7 +115,7 @@ public function getCustomer(Request $request)
         'Accept' => 'application/json',
         'Bearer-Token' => config('services.fastpay.token'),
     ])->get(
-        config('services.fastpay.base_url') . 'api/Customers/GetCustomer',
+        config('services.fastpay.url') . 'api/Customers/GetCustomer',
         [
             'DDReference' => $request->dd_reference
         ]
@@ -130,7 +130,7 @@ public function getCustomerBounces(Request $request)
         'Accept' => 'application/json',
         'Bearer-Token' => config('services.fastpay.token'),
     ])->get(
-        config('services.fastpay.base_url') . 'api/Customers/GetCustomerBounces',
+        config('services.fastpay.url') . 'api/Customers/GetCustomerBounces',
         [
             'SortCode' => $request->sort_code,
             'AccountNumber' => $request->account_number,
@@ -147,7 +147,7 @@ public function getCustomersByStatus($status)
         'Accept' => 'application/json',
         'Bearer-Token' => config('services.fastpay.token'),
     ])->get(
-        config('services.fastpay.base_url') . 'api/Customers/GetCustomers',
+        config('services.fastpay.url') . 'api/Customers/GetCustomers',
         ['Status' => $status]
     );
 
@@ -158,7 +158,7 @@ public function remittance($year, $month, $day)
     $response = Http::withHeaders([
         'Bearer-Token' => config('services.fastpay.token'),
     ])->get(
-        config('services.fastpay.base_url') . "api/files/$year/$month/$day"
+        config('services.fastpay.url') . "api/files/$year/$month/$day"
     );
 
     return response($response->body(), 200)

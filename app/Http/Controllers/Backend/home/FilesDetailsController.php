@@ -87,12 +87,18 @@ public function import(Request $request)
             // ✅ CALCULATE TOTAL
             $totalAmount = $rows->sum('amount');
 
-            // ✅ GENERATE CSV FROM DB (🔥 MAIN FIX)
+            // ✅ GENERATE CSV FROM DB — must match FastPay's full import template
+            // (same 22-column layout produced by export()). Sending only 6 columns
+            // prevented FastPay from mapping the Amount column, so the dashboard
+            // Total Amount showed blank.
             $csv = fopen('php://temp', 'r+');
 
-            // Header
+            // Header (FastPay template column names)
             fputcsv($csv, [
-                'DD Reference','Sort Code','Account No','Account Name','Amount','BACS Code'
+                'DD REFERENCE', 'Sort Code', 'Account No', 'Account Name', 'Amount', 'BACS Code',
+                'Invoice No (Optional)', 'Title', 'Initial', 'Forename', 'Surname',
+                'Salutation 1', 'Salutation 2', 'Address 1', 'Address 2', 'Area', 'Town',
+                'Postcode', 'Phone', 'Mobile', 'Email', 'Notes (Optional)',
             ]);
 
             foreach ($rows as $row) {
@@ -102,7 +108,14 @@ public function import(Request $request)
                     $row->account_number,
                     $row->account_name,
                     number_format($row->amount, 2, '.', ''), // ✅ correct amount
-                    $row->bacs_code
+                    $row->bacs_code,
+                    '',                       // Invoice No (Optional)
+                    '',                       // Title
+                    $row->initial ?? '',
+                    $row->forename ?? '',
+                    $row->surname ?? '',
+                    '', '', '', '', '', '', '', '', '', '', // Salutations, Address, Area, Town, Postcode, Phone, Mobile, Email
+                    $row->error_message ?? '', // Notes (Optional)
                 ]);
             }
 
@@ -157,10 +170,18 @@ public function import(Request $request)
             // ✅ SAVE FILE (OPTIONAL)
             $storedPath = $uploadedFile->store('uploads/fastpay/' . now()->format('Y/m'), 'local');
 
+            // ✅ Capture FastPay's returned FileId so the status-sync job can
+            // poll api/Transactions?FileId=... (Strategy A). Without this the
+            // sync could never reliably match the file and status stayed "processing".
+            $fastpayFileId = data_get($responseData, 'Data.FileId')
+                ?? data_get($responseData, 'Data.Id')
+                ?? data_get($responseData, 'Data.FileID');
+
             $fileRecord->update([
                 'file_path'        => $storedPath,
                 'total_amount'     => $totalAmount,
                 'fastpay_response' => json_encode($responseData),
+                'fastpay_file_id'  => $fastpayFileId ?: null,
                 'status'           => 'uploaded',
             ]);
 

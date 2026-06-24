@@ -770,13 +770,21 @@ class CustomerDetailsController extends Controller
                     data_get($step1, 'title'),
                     data_get($step1, 'last_name'),
                 ])));
+                // BACS transaction code. Currently hardcoded to 17 (regular/recurring
+                // collection). Per BACS rules a member's FIRST EVER collection should be
+                // 01 (first), then 17 for every collection after. We don't yet track
+                // "has this member been collected before", so this stays 17 until that
+                // business rule is confirmed. To switch first collections to 01:
+                //   $bacsCode = ($this->getMemberPhase($member) === 'onboarding' && !$member->mail_sent_at) ? '01' : '17';
+                $bacsCode = 17;
+
                 fputcsv($handle, [
                     $member->dd_reference ?? '',
                     data_get($payment, 'sort_code', ''),
                     data_get($payment, 'account_number', ''),
                     $fullName,
                     $member->price ?? 0,
-                    17,
+                    $bacsCode,
                 ]);
             }
             fclose($handle);
