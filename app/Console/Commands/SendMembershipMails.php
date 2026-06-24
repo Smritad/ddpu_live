@@ -166,7 +166,7 @@ class SendMembershipMails extends Command
                 [$step1, $step2, $step7, $payment, $fullName, $email] = $this->extractData($member);
                 if (!$email) { $this->warn("  ⚠ No email – ID {$member->id}"); continue; }
 
-                $this->sendRenewalReminderMail($member, $fullName, $email);
+                $this->sendRenewalReminderMail($member, $fullName, $email, $step1, $payment);
 
                 $member->renewal_reminder_sent_at = now();
                 $member->save();
@@ -204,7 +204,7 @@ class SendMembershipMails extends Command
                 [$step1, $step2, $step7, $payment, $fullName, $email] = $this->extractData($member);
                 if (!$email) { $this->warn("  ⚠ No email – ID {$member->id}"); continue; }
 
-                $this->sendRenewalReminderMail($member, $fullName, $email); // same template, overdue context
+                $this->sendRenewalReminderMail($member, $fullName, $email, $step1, $payment); // same template, overdue context
 
                 $member->renewal_reminder_sent_at = now();
                 $member->save();
@@ -271,12 +271,43 @@ class SendMembershipMails extends Command
         });
     }
 
-    private function sendRenewalReminderMail($member, $fullName, $email)
+    private function sendRenewalReminderMail($member, $fullName, $email, $step1 = [], $payment = [])
     {
+        // The renewal-reminder view requires the full renewed-period context
+        // ($start, $end, $isMonthly, amounts, salutation). Previously only name/
+        // renewalDate/membershipNumber were passed, which threw
+        // "Undefined variable $start" and failed every overdue notice in the cron.
+
+        // Renewed membership period — anchored on renewal_date (overdue rows always have one)
+        $start = $member->renewal_date ? Carbon::parse($member->renewal_date) : Carbon::now();
+        $end   = $start->copy()->addYear()->subDay();
+
+        $paymentPlan = strtolower(trim((string) data_get($payment, 'payment_plan', '')));
+        $isMonthly   = str_contains($paymentPlan, 'monthly');
+        $price       = (float) ($member->price ?? 0);
+
+        if ($isMonthly) {
+            $monthlyAmount     = number_format($price, 2);
+            $totalAnnualAmount = number_format($price * 12, 2);
+        } else {
+            $monthlyAmount     = number_format($price, 2);
+            $totalAnnualAmount = number_format($price, 2);
+        }
+
+        $salutationTitle = trim((string) data_get($step1, 'title', ''));
+        $surname         = trim((string) data_get($step1, 'last_name', ''));
+
         Mail::send('backend.customer-details.mail-renewal-reminder', [
-            'name'             => $fullName,
-            'renewalDate'      => $member->renewal_date ? Carbon::parse($member->renewal_date)->format('d F Y') : 'N/A',
-            'membershipNumber' => $member->dd_reference ?? 'N/A',
+            'name'              => $fullName,
+            'salutationTitle'   => $salutationTitle,
+            'surname'           => $surname,
+            'start'             => $start,
+            'end'               => $end,
+            'isMonthly'         => $isMonthly,
+            'monthlyAmount'     => $monthlyAmount,
+            'totalAnnualAmount' => $totalAnnualAmount,
+            'renewalDate'       => $member->renewal_date ? Carbon::parse($member->renewal_date)->format('d F Y') : 'N/A',
+            'membershipNumber'  => $member->dd_reference ?? 'N/A',
         ], function ($msg) use ($email, $fullName) {
             $msg->to($email, $fullName)->subject('DDPU – Your Membership Renewal Is Due Soon');
         });

@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\MembershipApplicationform;
+use App\Models\FileDetail;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Support\Facades\Response;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -759,7 +760,14 @@ class CustomerDetailsController extends Controller
     {
         $filename = now()->format('y-m-d') . ' DDPU (Monthly on the 10th)';
 
-        return new StreamedResponse(function () use ($memberships) {
+        // DD references that have ALREADY been submitted in a previous file.
+        // A member whose reference is not here is on their FIRST collection.
+        $collectedRefs = FileDetail::whereNotNull('dd_reference')
+            ->pluck('dd_reference')
+            ->unique()
+            ->flip();
+
+        return new StreamedResponse(function () use ($memberships, $collectedRefs) {
             $handle = fopen('php://output', 'w');
             fputcsv($handle, ['DD Reference', 'Sort Code', 'Account No', 'Account Name', 'Amount', 'BACS Code']);
 
@@ -770,13 +778,13 @@ class CustomerDetailsController extends Controller
                     data_get($step1, 'title'),
                     data_get($step1, 'last_name'),
                 ])));
-                // BACS transaction code. Currently hardcoded to 17 (regular/recurring
-                // collection). Per BACS rules a member's FIRST EVER collection should be
-                // 01 (first), then 17 for every collection after. We don't yet track
-                // "has this member been collected before", so this stays 17 until that
-                // business rule is confirmed. To switch first collections to 01:
-                //   $bacsCode = ($this->getMemberPhase($member) === 'onboarding' && !$member->mail_sent_at) ? '01' : '17';
-                $bacsCode = 17;
+                // BACS transaction code per BACS/AUDDIS rules:
+                //   01 = first collection of a series  |  17 = regular/recurring collection.
+                // A member already present in a previously uploaded file is recurring (17);
+                // a brand-new reference is their first collection (01).
+                $bacsCode = ($member->dd_reference && $collectedRefs->has($member->dd_reference))
+                    ? '17'
+                    : '01';
 
                 fputcsv($handle, [
                     $member->dd_reference ?? '',

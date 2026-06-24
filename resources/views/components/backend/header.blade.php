@@ -31,7 +31,7 @@
           <div class="left-header col-xxl-5 col-xl-6 col-lg-5 col-md-4 col-sm-3 p-0">
             <div> <a class="toggle-sidebar" href="#"> <i class="iconly-Category icli"> </i></a>
               <div class="d-flex align-items-center gap-2 ">
-              <h4 class="f-w-600">Welcome, {{ Auth::user()->name }}</h4><img class="mt-0" src="{{ asset('admin/assets/images/hand.gif') }}" alt="hand-gif">
+              <h4 class="f-w-600">Welcome, {{ Auth::user()?->name ?? 'Guest' }}</h4><img class="mt-0" src="{{ asset('admin/assets/images/hand.gif') }}" alt="hand-gif">
               </div>
             </div>
             <div class="welcome-content d-xl-block d-none"><span class="text-truncate col-12">Here’s what’s happening with your store today. </span></div>
@@ -47,7 +47,7 @@
               <li class="profile-nav onhover-dropdown"> 
                 <div class="media profile-media"><img class="b-r-10" src="{{ asset('admin/assets/images/user/user.png') }}" alt="">
                   <div class="media-body d-xxl-block d-none box-col-none">
-                    <div class="d-flex align-items-center gap-2"> <span>{{ Auth::user()->name }} </span><i class="middle fa fa-angle-down"> </i></div>
+                    <div class="d-flex align-items-center gap-2"> <span>{{ Auth::user()?->name ?? 'Guest' }} </span><i class="middle fa fa-angle-down"> </i></div>
                     <!-- <p class="mb-0 font-roboto">{{ Auth::user()->name }}</p> -->
                   </div>
                 </div>
