@@ -45,6 +45,52 @@
             margin-top: 20px;
         }
     </style>
+     <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 0.95rem;
+            color: #333;
+            margin: 1rem;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #0d6efd;
+        }
+        .section {
+            margin-bottom: 1.5rem;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            overflow: hidden;
+            box-shadow: 0 0 4px rgba(0,0,0,0.05);
+        }
+        .section-header {
+            background-color: #0d6efd;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+        }
+        .section-body {
+            padding: 1rem;
+        }
+        .field-label {
+            font-weight: 600;
+        }
+        .field-value {
+            margin-bottom: 0.5rem;
+        }
+        .row > .col-6 {
+            padding-bottom: 0.5rem;
+        }
+        textarea[readonly] {
+            width: 100%;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 0.4rem;
+            resize: none;
+            background-color: #f8f9fa;
+        }
+    </style>
 </head>
 <body>
 
@@ -59,13 +105,121 @@
         </td>
     </tr>
 </table>
+<h2 style="text-align:center; color:black; border-bottom: 2px solid black; ">
+    Application To DDPU
+</h2>
+@php
+    // Helper to display N/A for empty values
+    $show = fn($value) => !empty($value) ? $value : 'N/A';
+@endphp
+
+<div class="section">
+    <div class="section-header" style="background-color:#113163">Step 1: Personal Details</div>
+    <div class="section-body">
+    <p><strong>GMC/GDC Type:</strong> {{ $show($step11['gmc_gdc_type'] ?? null) }}</p>
+    <p><strong>GMC/GDC Number:</strong> {{ $show($step11['gmc_gdc_number'] ?? null) }}</p>
+    <p><strong>Registration Year:</strong> {{ $show($step11['registration_year'] ?? null) }}</p>
+    <p><strong>Qualification Year:</strong> {{ $show($step11['qualification_year'] ?? null) }}</p>
+    <p><strong>Specialty:</strong> {{ $show($step11['specialty'] ?? null) }}</p>
+    <p><strong>Professional Qualification:</strong> {{ $show($step11['professional_qualification'] ?? null) }}</p>
+    <p><strong>Full Name:</strong> 
+{{ $show(trim(
+    ($step11['title'] ?? '') . ' ' .
+    ($step11['first_name'] ?? '') . ' ' .
+    ($step11['middle_name'] ?? '') . ' ' .
+    ($step11['last_name'] ?? '')
+)) }}    </p>
+    <p><strong>Date of Birth:</strong> {{ $show($step11['date_of_birth'] ?? null) }}</p>
+    <p><strong>Gender:</strong> {{ $show($step11['gender'] ?? null) }}</p>
+    <p><strong>Postal Code:</strong> {{ $show($step11['postal-code'] ?? null) }}</p>
+    <p><strong>Address1:</strong> 
+        {{ $show($step11['address_line_1'] ?? null) }}, 
+        {{ $show($step11['city'] ?? null) }}, 
+        {{ $show($step11['country'] ?? null) }}, 
+        {{ $show($step11['postal-code'] ?? null) }}
+    </p>
+    
+    @if(!empty($step11['address_line_2']))
+<p>
+    <strong>Address2:</strong> 
+    {{ $show($step11['address_line_2'] ?? null) }}, 
+    {{ $show($step11['city'] ?? null) }}, 
+    {{ $show($step11['country'] ?? null) }}, 
+    {{ $show($step11['postal-code'] ?? null) }}
+</p>
+@endif
+    <p><strong>Contact Address1:</strong> 
+        {{ $show($step11['contact_address_line_1'] ?? null) }}, 
+        {{ $show($step11['contact_city'] ?? null) }}, 
+        {{ $show($step11['contact_country'] ?? null) }}, 
+        {{ $show($step11['contact_postal_code'] ?? null) }}
+    </p>
+    
+      @if(!empty($step11['contact_address_line_2']))
+    <p><strong>Contact Address2:</strong> 
+        {{ $show($step11['contact_address_line_2'] ?? null) }}, 
+        {{ $show($step11['contact_city'] ?? null) }}, 
+        {{ $show($step11['contact_country'] ?? null) }}, 
+        {{ $show($step11['contact_postal_code'] ?? null) }}
+    </p>
+    @endif
+    
+</div>
+ </div>
+
+<div class="section">
+    <div class="section-header" style="background-color:#113163">Step 2: Contact & Security</div>
+    <div class="section-body">
+    <p><strong>Mobile Number:</strong> {{ $show($step2['mobile_number'] ?? null) }}</p>
+    <p><strong>Primary Email:</strong> {{ $show($step2['primary_email'] ?? null) }}</p>
+    <p><strong>Secondary Email:</strong> {{ $show($step2['secondary_email'] ?? null) }}</p>
+    <p><strong>Username:</strong> {{ $show($step2['username'] ?? null) }}</p>
+</div>
+ </div>
+
+<div class="section">
+    <div class="section-header" style="background-color:#113163">Step 3: Employment Details</div>
+    <div class="section-body">
+    <p><strong>Employment Status:</strong> {{ $show($step3['employment_status'] ?? null) }}</p>
+    <p><strong>Current Employer:</strong> {{ $show($step3['current_employer'] ?? null) }}</p>
+    <p><strong>Employment Grade:</strong> {{ $show($step3['employment_grade'] ?? null) }}</p>
+    <p><strong>Lead Employer:</strong> {{ $show($step3['lead_employer'] ?? null) }}</p>
+    <p><strong>Role Description:</strong> {{ $show($step3['current_role_description'] ?? null) }}</p>
+</div></div>
+
+
+<div class="section">
+    <div class="section-header" style="background-color:#113163">Step 4: Professional Negligence</div>
+    <div class="section-body">
+    <p><strong>Do you require Professional Negligence indemnity?:</strong> 
+        {{ ($step4['pni_required_yes'] ?? '0') == '1' ? 'Yes' : 'No' }}
+    </p>
+</div></div>
+
+<div class="section">
+    <div class="section-header" style="background-color:#113163">Step 5: Professional Issues</div>
+    <div class="section-body">
+    <p><strong>Issue Q1:Please provide details of any concerns raised about your conduct, capability or health in the past five (5) years. This should include any formal and/or disciplinary investigation by your contracting body, your employer or those who hold your performer’s list registration.</strong> <br>{{ $show($step5['issue_q31'] ?? null) }}</p>
+    <p><strong>Issue Q2:Are you aware of any matters that may result in or have resulted in a claim or complaint being made against you? Please provide full details. Not disclosing information that we consider relevant may invalidate your membership. Therefore, if you are unsure if certain information you have would qualify to be stated then please do state that here:</strong> <br>{{ $show($step5['issue_q32'] ?? null) }}</p>
+    <p><strong>Issue Q3:Have you been subject to any Employer’s disciplinary investigation, inquiry or other proceedings, GMC/GDC investigation, inquiry or other proceedings, Coroners’ Inquest or Fatal Accident Inquiry and/or criminal prosecution in the past ten (10) years?</strong> <br>{{ $show($step5['issue_q33'] ?? null) }}</p>
+</div></div>
+<div class="section">
+    <div class="section-header" style="background-color:#113163">Step 6: Claims & Previous Membership</div>
+    <div class="section-body">
+    <p><strong>Claims Q1:Have any claims or complaints relating to your professional work been made or threatened against you in the past three (3) years? If so, please provide details:</strong> <br>{{ $show($step6['claims_q1'] ?? null) }}</p>
+    <p><strong>Claims Q2:Are you aware of any acts, errors, omissions, incidents, events or circumstances which may give rise to a claim, investigation or complaint against you? If so, please provide details:</strong> <br>{{ $show($step6['claims_q2'] ?? null) }}</p>
+    <p><strong>Have you ever had membership or cover cancelled, declined or refused to be renewed by a professional membership organisation or provider of professional indemnity? If so, please provide details:</strong> <br>{{ $show($step6['membership_cancelled'] ?? null) }}</p>
+    <p><strong>Previous Membership Name:</strong> <br>{{ $show($step6['previous_membership_name'] ?? null) }}</p>
+    <p><strong>Previous Membership Expiry:</strong> <br>{{ $show($step6['previous_membership_expiry'] ?? null) }}</p>
+</div></div>
+
 
 <p><strong>Date:</strong> {{ $date }}</p>
 
-<h2 class="title">Direct Debit Instruction</h2>
+<h2 class="title" style="color:black;">Direct Debit Instruction</h2>
 
 {{-- DETAILS --}}
-<div class="section">
+<div class="section" style="padding:12px;">
 
     <p>
         <span class="label">Submission Type:</span>
@@ -98,10 +252,10 @@
             {{ $branchName }}
         </p>
     @else
-        <p>
-            <span class="label">Company Name:</span>
-            {{ $companyName }}
-        </p>
+        <!--<p>-->
+        <!--    <span class="label">Company Name:</span>-->
+        <!--    {{ $companyName }}-->
+        <!--</p>-->
 
         @if(!empty($panNumber))
             <p>
@@ -115,7 +269,13 @@
         <span class="label">Service User Number:</span>
         {{ $serviceNumber }}
     </p>
+<p><strong>Payment Plan:</strong> {{ $paymentplan }}</p>
 
+@if(strtolower($paymentplan) == 'monthly')
+    <p style="color: #888; font-size: 13px; margin-top: 5px;">
+        Note: At present, we only offer annual membership. You are committing to all 12 installments.
+    </p>
+@endif
 </div>
 
 <p>

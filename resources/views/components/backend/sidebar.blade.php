@@ -53,8 +53,64 @@
                   </ul>
                 </li>
                 
+                <li class="sidebar-list {{ request()->routeIs('what-is-ddpu-details.index') ? 'active' : '' }}">
+                  <i class="fa fa-thumb-tack"> </i>
+                  <a class="sidebar-link sidebar-title" href="#">
+                    <svg class="stroke-icon"> 
+                      <use href="{{ asset('admin/assets/svg/icon-sprite.svg#stroke-icons') }}"></use>
+                    </svg>
+                    <svg class="fill-icon">
+                      <use href="{{ asset('admin/assets/svg/icon-sprite.svg#stroke-icons') }}"></use>
+                    </svg>
+                    <span>About Us</span>
+                  </a>
+                  <ul class="sidebar-submenu">
+                    <li><a href="{{ route('what-is-ddpu-details.index') }}" class="{{ request()->routeIs('what-is-ddpu-details.index') ? 'active' : '' }}">What is DDPU</a></li>
+                    <li><a href="{{ route('staff-personnel.index') }}" class="{{ request()->routeIs('staff-personnel.index') ? 'active' : '' }}">What is Staff </a></li>
+                    <li><a href="{{ route('our-experienced.index') }}" class="{{ request()->routeIs('our-experienced.index') ? 'active' : '' }}">Our Experience</a></li>
+                    <li><a href="{{ route('our-methods.index') }}" class="{{ request()->routeIs('our-methods.index') ? 'active' : '' }}">Our Method</a></li>
+                    <li><a href="{{ route('some-of-our-past-cases.index') }}" class="{{ request()->routeIs('some-of-our-past-cases.index') ? 'active' : '' }}">Some of Our Past Cases </a></li>
+                     <li><a href="{{ route('aboutus-testimonials-details.index') }}" class="{{ request()->routeIs('aboutus-testimonials-details.index') ? 'active' : '' }}">Testimonials</a></li>
 
-                <li class="sidebar-list {{ request()->routeIs('banner-details.index') ? 'active' : '' }}">
+                  </ul>
+                </li>
+
+
+            <li class="sidebar-list {{ request()->routeIs('membership-details.index') ? 'active' : '' }}">
+                  <i class="fa fa-thumb-tack"> </i>
+                  <a class="sidebar-link sidebar-title" href="#">
+                    <svg class="stroke-icon"> 
+                      <use href="{{ asset('admin/assets/svg/icon-sprite.svg#stroke-icons') }}"></use>
+                    </svg>
+                    <svg class="fill-icon">
+                      <use href="{{ asset('admin/assets/svg/icon-sprite.svg#stroke-icons') }}"></use>
+                    </svg>
+                    <span>Services</span>
+                  </a>
+                  <ul class="sidebar-submenu">
+                    <li><a href="{{ route('membership-details.index') }}" class="{{ request()->routeIs('membership-details.index') ? 'active' : '' }}">Membership</a></li>
+                     <li><a href="{{ route('dentists-details.index') }}" class="{{ request()->routeIs('dentists-details.index') ? 'active' : '' }}">Dentists</a></li>
+                     <li><a href="{{ route('general-practice-details.index') }}" class="{{ request()->routeIs('general-practice-details.index') ? 'active' : '' }}">General Practice</a></li>
+
+                    <li><a class="submenu-title" href="#">Hospital Practice<span class="sub-arrow"><i class="fa fa-angle-right"></i></span></a>
+                      <ul class="nav-sub-childmenu submenu-content">
+                        <li><a href="{{ route('consultants-details.index') }}">Consultants</a></li>
+                        <li><a href="{{ route('sas-doctors-grades-details.index') }}">SAS Doctors and Other Non-Training Grades</a></li>
+                        <li><a href="{{ route('trainees-details.index') }}">Trainees Detail</a></li>
+                        <li><a href="{{ route('trust-grade-details.index') }}">Trust Grade And Ad Hoc Appointees In NHS</a></li>
+                       
+                      </ul>
+                    </li>
+                    
+                                     <li><a href="{{ route('private-sectoracademic-details.index') }}" class="{{ request()->routeIs('private-sectoracademic-details.index') ? 'active' : '' }}">Private Sector</a></li>
+                                     <li><a href="{{ route('compare-us-details.index') }}" class="{{ request()->routeIs('compare-us-details.index') ? 'active' : '' }}">Compare Us</a></li>
+                                     <li><a href="{{ route('for-non-members-details.index') }}" class="{{ request()->routeIs('for-non-members-details.index') ? 'active' : '' }}">For Non Members
+</a></li>
+
+                  </ul>
+
+                </li>
+             <li class="sidebar-list {{ request()->routeIs('membership-benefits-details.index') ? 'active' : '' }}">
                   <i class="fa fa-thumb-tack"> </i>
                   <a class="sidebar-link sidebar-title" href="#">
                     <svg class="stroke-icon"> 
@@ -66,11 +122,29 @@
                     <span>Membership</span>
                   </a>
                   <ul class="sidebar-submenu">
+                    <li><a href="{{ route('membership-benefits-details.index') }}" class="{{ request()->routeIs('membership-benefits-details.index') ? 'active' : '' }}">Membership benefits</a></li>
+                    
+                    <li><a href="{{ route('membership-rates-details.index') }}" class="{{ request()->routeIs('membership-rates-details.index') ? 'active' : '' }}">Membership Rates Option</a></li>
+                    
+                  </ul>
+                </li>
+                <li class="sidebar-list {{ request()->routeIs('banner-details.index') ? 'active' : '' }}">
+                  <i class="fa fa-thumb-tack"> </i>
+                  <a class="sidebar-link sidebar-title" href="#">
+                    <svg class="stroke-icon"> 
+                      <use href="{{ asset('admin/assets/svg/icon-sprite.svg#stroke-icons') }}"></use>
+                    </svg>
+                    <svg class="fill-icon">
+                      <use href="{{ asset('admin/assets/svg/icon-sprite.svg#stroke-icons') }}"></use>
+                    </svg>
+                    <span>Join Membership</span>
+                  </a>
+                  <ul class="sidebar-submenu">
                     <li><a href="{{ route('files.details') }}" class="{{ request()->routeIs('files.details') ? 'active' : '' }}">Files</a></li>
                      <li><a href="{{ route('transaction.details') }}" class="{{ request()->routeIs('transaction.details') ? 'active' : '' }}">Transactions</a></li>
                     <!-- <li><a href="{{ route('membership.details') }}" class="{{ request()->routeIs('membership.details') ? 'active' : '' }}">Customers </a></li> -->
-                     <li><a href="{{ route('customer-elctronic.details') }}" class="{{ request()->routeIs('customer-elctronic.details') ? 'active' : '' }}">Customers (Elctronic)</a></li>
-                     <li><a href="{{ route('customer-physical.details') }}" class="{{ request()->routeIs('customer-physical.details') ? 'active' : '' }}">Customers (Physical)</a></li>
+                     <li><a href="{{ route('customer-elctronic.details') }}" class="{{ request()->routeIs('customer-elctronic.details') ? 'active' : '' }}">User Details</a></li>
+                     <!--<li><a href="{{ route('customer-physical.details') }}" class="{{ request()->routeIs('customer-physical.details') ? 'active' : '' }}">Customers (Physical)</a></li>-->
                      <li><a href="{{ route('direct_debit.index') }}" class="{{ request()->routeIs('direct_debit.index') ? 'active' : '' }}">Paperles Signups</a></li>
                    <!-- <li><a href="">Submissions Reminders  </a></li>
                    <li><a href="">Reports </a></li> -->

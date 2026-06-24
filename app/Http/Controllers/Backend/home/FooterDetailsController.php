@@ -26,7 +26,7 @@ public function store(Request $request)
         'description' => 'required|string',
         'address' => 'required|string',
         'email' => 'required|email',
-        
+        'map_url' => 'required|string',
         'phone' => 'required|string',
         'social_title' => 'array|min:1',
         'social_title.*' => 'string',
@@ -45,6 +45,7 @@ public function store(Request $request)
         'logo' => $logoName,
         'description' => $request->description,
         'address' => $request->address,
+'mapurl' => $request->map_url,
         'email' => $request->email,
         'phone' => $request->phone,
         'social_titles' => implode(',', $request->social_title),
@@ -79,7 +80,7 @@ public function update(Request $request, $id)
         'description' => $request->description,
         'address' => $request->address,
         'email' => $request->email,
-               
+               'mapurl' => $request->map_url,
         'phone' => $request->phone,
         'social_titles' => implode(',', $request->social_title),
         'social_links' => implode(',', $request->social_link),

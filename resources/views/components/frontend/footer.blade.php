@@ -19,7 +19,7 @@
         <div class="row gy-4">
 
             <!-- ABOUT + LOGO -->
-            <div class="col-lg-4 col-md-4 footer-about">
+            <div class="col-lg-4 col-md-5 footer-about">
                 <a href="{{ url('/') }}" class="logo d-flex align-items-center">
                     <img src="{{ asset('uploads/footer/' . $footer->logo) }}" alt="footer logo">
                 </a>
@@ -45,21 +45,20 @@
                     @endforeach
                 </div>
             </div>
-
-            <div class="col-lg-2 col-md-2"></div>
-
+            <div class="col-lg-2 col-md-2 d-md-none d-lg-block"></div>
             <!-- SERVICES -->
             <div class="col-lg-3 col-md-3 footer-links">
                 <h4>Our Services</h4>
                 <ul>
-                    <li><a href="#">Membership</a></li>
-                    <li><a href="#">Private Sector & Academic Specialities</a></li>
-                    <li><a href="#">Compare Us</a></li>
+                    <li><a href="{{ route('frontend.services-membership') }}">Membership</a></li>
+                    <li><a href="{{ route('frontend.services-dentists') }}">Dentists</a></li>
+                   <li><a href="{{ route('frontend.general-practice') }}">General Practice (NHS)</a></li>
+                    <li><a href="{{ route('frontend.private_sector_academic_specialities') }}">Private Sector & Academic Specialities</a></li>
+                    <li><a href="{{ route('frontend.compare_us') }}">Compare Us</a></li>
                 </ul>
             </div>
-
             <!-- CONTACT INFO -->
-            <div class="col-lg-3 col-md-3 footer-links">
+            <div class="col-lg-3 col-md-4 footer-links">
                 <h4>Contact Info</h4>
 
                 <div class="contact-item">
@@ -67,7 +66,13 @@
                         <i class="fa-solid fa-location-dot"></i>
                     </div>
                     <div class="contact-info">
-                        <p><a href="#">{{ $footer->address }}</a></p>
+                    <p>
+                        @if(!empty($footer->address))
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ urlencode($footer->address) }}" target="_blank">
+                                {{ $footer->address }}
+                            </a>
+                        @endif
+                    </p>
                     </div>
                 </div>
 

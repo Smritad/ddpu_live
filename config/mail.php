@@ -96,6 +96,10 @@ return [
             ],
             'retry_after' => 60,
         ],
+        'ssl' => [
+    'verify_peer' => false,
+    'verify_peer_name' => false,
+],
 
     ],
 

@@ -26,7 +26,8 @@ class MembershipApplicationform extends Model
         'submitted_at',
         'step1_signup',
         'final_submit_signup',
-        'dd_reference'
+        'dd_reference',
+        'renewal_status',
     ];
 
     protected $casts = [

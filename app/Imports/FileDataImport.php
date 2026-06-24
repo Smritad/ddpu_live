@@ -26,63 +26,70 @@ class FileDataImport implements
     }
 
     /**
-     * Force correct CSV reading settings
+     * CSV Settings
      */
     public function getCsvSettings(): array
     {
         return [
-            'delimiter' => ',',       // change to ';' if your CSV uses semicolons
+            'delimiter' => ',',
             'enclosure' => '"',
             'input_encoding' => 'UTF-8',
         ];
     }
 
     /**
-     * Map each row to FileDetail model
+     * Main Row Mapping
      */
     public function model(array $row)
     {
-        // Log the first row to verify column mapping
+        // Log first row for debugging
         if (!$this->logged) {
             Log::info('🔍 Sample Excel Row Parsed:', $row);
             $this->logged = true;
         }
 
-        // Skip empty or invalid rows
+        // Skip empty rows
         if (empty($row['dd_reference']) && empty($row['account_no'])) {
             return null;
         }
 
         try {
+            // ✅ CLEAN & SAFE AMOUNT
+            $amount = $this->cleanAmount($row['amount'] ?? 0);
+
             return new FileDetail([
-                'file_id'       => $this->fileId,
-                'dd_reference'  => $row['dd_reference'] ?? null,
-                'sort_code'     => $row['sort_code'] ?? null,
-                'account_no'    => $row['account_no'] ?? null,
-                'account_name'  => $row['account_name'] ?? null,
-                'amount'        => isset($row['amount']) ? (float) $row['amount'] : 0,
-                'bacs_code'     => $row['bacs_code'] ?? null,
-                'invoice_no'    => $row['invoice_no_optional'] ?? $row['invoice_no'] ?? null,
-                'title'         => $row['title'] ?? null,
-                'initial'       => $row['initial'] ?? null,
-                'forename'      => $row['forename'] ?? null,
-                'surname'       => $row['surname'] ?? null,
-                'salutation_1'  => $row['salutation_1'] ?? null,
-                'salutation_2'  => $row['salutation_2'] ?? null,
-                'address_1'     => $row['address_1'] ?? null,
-                'address_2'     => $row['address_2'] ?? null,
-                'area'          => $row['area'] ?? null,
-                'town'          => $row['town'] ?? null,
-                'postcode'      => $row['postcode'] ?? null,
-                'phone'         => $row['phone'] ?? null,
-                'mobile'        => $row['mobile'] ?? null,
-                'email'         => $row['email'] ?? null,
-                'notes'         => $row['notes_optional'] ?? $row['notes'] ?? null,
+                'file_id'        => $this->fileId,
+                'dd_reference'   => $row['dd_reference'] ?? null,
+                'sort_code'      => $this->cleanText($row['sort_code'] ?? null),
+                'account_number' => $this->cleanText($row['account_no'] ?? null),
+                'account_name'   => $this->cleanText($row['account_name'] ?? null),
+
+                // ✅ FIXED AMOUNT
+                'amount'         => $amount,
+
+                'bacs_code'      => $row['bacs_code'] ?? null,
+                'invoice_no'     => $row['invoice_no_optional'] ?? $row['invoice_no'] ?? null,
+                'title'          => $row['title'] ?? null,
+                'initial'        => $row['initial'] ?? null,
+                'forename'       => $row['forename'] ?? null,
+                'surname'        => $row['surname'] ?? null,
+                'salutation_1'   => $row['salutation_1'] ?? null,
+                'salutation_2'   => $row['salutation_2'] ?? null,
+                'address_1'      => $row['address_1'] ?? null,
+                'address_2'      => $row['address_2'] ?? null,
+                'area'           => $row['area'] ?? null,
+                'town'           => $row['town'] ?? null,
+                'postcode'       => $row['postcode'] ?? null,
+                'phone'          => $row['phone'] ?? null,
+                'mobile'         => $row['mobile'] ?? null,
+                'email'          => $row['email'] ?? null,
+                'notes'          => $row['notes_optional'] ?? $row['notes'] ?? null,
             ]);
+
         } catch (\Exception $e) {
             Log::error('❌ Row import failed', [
-                'file_id' => $this->fileId,
-                'error' => $e->getMessage(),
+                'file_id'  => $this->fileId,
+                'error'    => $e->getMessage(),
                 'row_data' => $row,
             ]);
             return null;
@@ -90,15 +97,52 @@ class FileDataImport implements
     }
 
     /**
-     * Optimize import performance
+     * ✅ CLEAN AMOUNT (CRITICAL FIX)
+     */
+    private function cleanAmount($value)
+    {
+        if (is_null($value) || $value === '') {
+            return 0;
+        }
+
+        // Convert to string
+        $value = (string) $value;
+
+        // Remove currency symbols, commas, spaces
+        $value = str_replace(['£', ',', ' '], '', $value);
+
+        // Remove hidden / invalid characters
+        $value = preg_replace('/[^\d.\-]/', '', $value);
+
+        // Validate numeric
+        if (!is_numeric($value)) {
+            Log::warning('Invalid amount detected', ['value' => $value]);
+            return 0;
+        }
+
+        return round((float) $value, 2);
+    }
+
+    /**
+     * ✅ CLEAN TEXT (avoid DB issues like sort_code error)
+     */
+    private function cleanText($value)
+    {
+        if (!$value) return null;
+
+        return trim(preg_replace('/[^A-Za-z0-9]/', '', $value));
+    }
+
+    /**
+     * Performance Optimization
      */
     public function batchSize(): int
     {
-        return 100;
+        return 200;
     }
 
     public function chunkSize(): int
     {
-        return 100;
+        return 200;
     }
 }

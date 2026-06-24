@@ -214,3 +214,171 @@ $(document).ready(function () {
 
 
 
+// // =============== Next & Back ====================================
+// function updateFormHeight() {
+//   let activeStep = $(".slider-step").filter(function () {
+//     return $(this).css("opacity") == "1";
+//   });
+
+//   if (activeStep.length) {
+//     $("#form-step-wrap").css("height", activeStep.outerHeight() + "px");
+//   }
+// }
+
+// $(document).ready(function () {
+
+//   // Set initial height
+//   updateFormHeight();
+
+//   // Next Step
+//   $(".btn-next").on("click", function () {
+//     let currentStep = $(this).closest(".slider-step");
+//     let nextStep = $("#" + currentStep.data("nextStep"));
+
+//     currentStep.attr("data-anim", "hide-to--left");
+//     nextStep.attr("data-anim", "show-from--right");
+
+//     setTimeout(updateFormHeight, 600);
+//   });
+
+//   // Back Step
+//   $(".btn-back").on("click", function () {
+//     let currentStep = $(this).closest(".slider-step");
+//     let prevStep = $("#" + currentStep.data("backTo"));
+
+//     currentStep.attr("data-anim", "hide-to--right");
+//     prevStep.attr("data-anim", "show-from--left");
+
+//     setTimeout(updateFormHeight, 600);
+//   });
+
+// });
+
+// // Registration Year
+// const picker = document.querySelector('.af-registration-year-picker');
+// picker.addEventListener('focus', function () {
+//   this.type = 'month';  // shows year selector
+// });
+// picker.addEventListener('blur', function () {
+//   this.type = 'text';
+// });
+
+
+// // Qualification Year
+// const qualPicker = document.querySelector('.af-qualification-year-picker');
+
+// qualPicker.addEventListener('focus', function () {
+//   this.type = 'month';  // shows month selector (Chrome hack)
+// });
+
+// qualPicker.addEventListener('blur', function () {
+//   this.type = 'text';  // revert back to normal input
+// });
+
+
+// // =========
+// const dobInput = document.querySelector('.app-date-picker');
+
+// dobInput.addEventListener('focus', function () {
+//   this.type = 'date';
+// });
+
+// dobInput.addEventListener('blur', function () {
+//   if (!this.value) {
+//     this.type = 'text';
+//   }
+// });
+
+
+
+// // Show Password/ Hide password
+// document.querySelectorAll('.toggle-password').forEach(icon => {
+//   icon.addEventListener('click', function () {
+//     const input = document.querySelector(this.dataset.target);
+
+//     if (input.type === "password") {
+//       input.type = "text";
+//       this.classList.remove("fa-eye");
+//       this.classList.add("fa-eye-slash");
+//     } else {
+//       input.type = "password";
+//       this.classList.remove("fa-eye-slash");
+//       this.classList.add("fa-eye");
+//     }
+//   });
+// });
+
+
+// //==================================== Job Title and Grade ======================
+// document.getElementById("emp-status").addEventListener("change", function () {
+//   const employedFields = document.querySelectorAll(".employed-field");
+  
+//   if (this.value === "employed") {
+//     employedFields.forEach(el => el.classList.remove("d-none"));
+//   } else {
+//     employedFields.forEach(el => el.classList.add("d-none"));
+//   }
+// });
+
+
+// // =======================================
+// $(".pni-option").on("change", function () {
+//   // Uncheck all except the clicked one
+//   $(".pni-option").not(this).prop("checked", false);
+// });
+
+
+
+// // =================
+// let currentStep = 1;
+// const totalSteps = 7;
+
+// function updateStepUI(step) {
+
+//     const wrapper = document.getElementById("progressWrapper");
+//     const fill = document.querySelector(".progress-fill");
+//     const items = document.querySelectorAll(".progress-steps li");
+
+//     // Hide on Step 8 (thank you)
+//     if (step === 8) {
+//         wrapper.style.display = "none";
+//         return;
+//     }
+
+//     wrapper.style.display = "block";
+
+//     // Fill line animation
+//     let percent = ((step - 1) / (totalSteps - 1)) * 100;
+//     fill.style.width = percent + "%";
+
+//     // Step circles
+//     items.forEach((item, index) => {
+//         item.classList.remove("active", "completed");
+
+//         if (index + 1 < step) {
+//             item.classList.add("completed");
+//         }
+
+//         if (index + 1 === step) {
+//             item.classList.add("active");
+//         }
+//     });
+// }
+
+// // Next buttons
+// document.querySelectorAll(".btn-next").forEach(btn => {
+//     btn.addEventListener("click", () => {
+//         currentStep++;
+//         if (currentStep > 8) currentStep = 8;
+//         updateStepUI(currentStep);
+//     });
+// });
+
+// // Back buttons
+// document.querySelectorAll(".btn-back").forEach(btn => {
+//     btn.addEventListener("click", () => {
+//         currentStep--;
+//         if (currentStep < 1) currentStep = 1;
+//         updateStepUI(currentStep);
+//     });
+// });

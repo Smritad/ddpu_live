@@ -13,6 +13,9 @@ use App\Models\File;
 use App\Models\FileDetail;
 use App\Imports\FileDataImport;
 use App\Exports\FileDataExport;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Barryvdh\DomPDF\Facade as PDF; // ✅ IMPORTANT
 
 class FilesDetailsController extends Controller
 {
@@ -37,7 +40,7 @@ class FilesDetailsController extends Controller
         return view('backend.files.index', compact('files', 'fromDate', 'toDate'));
     }
 
-    public function import(Request $request)
+public function import(Request $request)
     {
         $request->validate([
             'file'            => 'required|mimes:xlsx,xls,csv,ods,xml,txt|max:10240',
@@ -45,69 +48,114 @@ class FilesDetailsController extends Controller
             'collection_date' => 'required|date',
         ]);
 
-        $uploadedFile    = $request->file('file');
-        $originalName    = $uploadedFile->getClientOriginalName();
-        $collectionDate  = $request->collection_date;
-        $notes           = $request->notes;
+        $uploadedFile   = $request->file('file');
+        $originalName   = $uploadedFile->getClientOriginalName();
+        $collectionDate = $request->collection_date;
+        $notes          = $request->notes;
 
         $submissionDate = strtoupper(Carbon::parse($collectionDate)->format('d/M/Y'));
         $uploadDate     = strtoupper(now()->format('d/M/Y'));
 
+        $fastpayFileName = Carbon::parse($collectionDate)->format('y-m-d')
+            . ' DDPU (Monthly on the 10th).csv';
+
+        // ✅ CREATE FILE RECORD
         $fileRecord = File::create([
-            'file_name'       => $originalName,
-            'collection_date' => $collectionDate,
-            'uploaded_date'   => now(),
-            'notes'           => $notes,
-            'status'          => 'pending',
+            'file_name'        => $originalName,
+            'fastpay_filename' => $fastpayFileName,
+            'collection_date'  => $collectionDate,
+            'uploaded_date'    => now(),
+            'notes'            => $notes,
+            'status'           => 'pending',
         ]);
 
         try {
-            Log::info('FastPay + Local Import started', [
-                'file_id'         => $fileRecord->id,
-                'file_name'       => $originalName,
+
+            // ✅ IMPORT EXCEL
+            Excel::import(
+                new FileDataImport($fileRecord->id),
+                $uploadedFile
+            );
+
+            // ✅ FETCH DATA FROM DB
+            $rows = FileDetail::where('file_id', $fileRecord->id)->get();
+
+            if ($rows->count() === 0) {
+                throw new \Exception('No rows imported');
+            }
+
+            // ✅ CALCULATE TOTAL
+            $totalAmount = $rows->sum('amount');
+
+            // ✅ GENERATE CSV FROM DB (🔥 MAIN FIX)
+            $csv = fopen('php://temp', 'r+');
+
+            // Header
+            fputcsv($csv, [
+                'DD Reference','Sort Code','Account No','Account Name','Amount','BACS Code'
             ]);
 
-            $fileContent   = file_get_contents($uploadedFile->getRealPath());
+            foreach ($rows as $row) {
+                fputcsv($csv, [
+                    $row->dd_reference,
+                    $row->sort_code,
+                    $row->account_number,
+                    $row->account_name,
+                    number_format($row->amount, 2, '.', ''), // ✅ correct amount
+                    $row->bacs_code
+                ]);
+            }
+
+            rewind($csv);
+            $fileContent = stream_get_contents($csv);
+            fclose($csv);
+
             $base64Content = base64_encode($fileContent);
 
+            // ✅ DEBUG LOGS
+            Log::info('FASTPAY FINAL CSV', ['csv' => $fileContent]);
+            Log::info('FASTPAY TOTAL', ['total' => $totalAmount]);
+
+            // ✅ API PAYLOAD
             $payload = [
                 "MessageControl" => ["Version" => "1.0"],
                 "Data" => [
-                    "ClientID"         => 0,
-                    "Filename"         => $originalName,
-                    "InternalFilename" => $originalName,
+                    "ClientID"         => "275708",
+                    "Filename"         => $fastpayFileName,
+                    "InternalFilename" => $fastpayFileName,
                     "FileContent"      => $base64Content,
                     "SubmissionDate"   => $submissionDate,
                     "UploadDate"       => $uploadDate,
                     "FileId"           => 0,
                     "Status"           => 0,
-                    "TotalAmount"      => 0,
+                    "TotalAmount"      => (float) $totalAmount,
                     "Notes"            => $notes ?? null,
                     "StatusName"       => "",
                 ]
             ];
 
-            $fastpayResponse = Http::withOptions(['verify' => false])
+            // ✅ CALL FASTPAY API
+            $response = Http::withOptions(['verify' => false])
                 ->withHeaders([
                     'Bearer-Token' => config('services.fastpay.token'),
                     'Accept'       => 'application/json',
                     'Content-Type' => 'application/json',
                 ])
-                ->timeout(60)
                 ->post(config('services.fastpay.url') . '/api/Files', $payload);
 
-            $responseData = $fastpayResponse->json();
+            $responseData = $response->json();
 
-            if (!$fastpayResponse->successful() || ($responseData['MessageControl']['Status'] ?? 'Error') !== 'Success') {
+            Log::info('FASTPAY RESPONSE', $responseData);
+
+            if (
+                !$response->successful() ||
+                ($responseData['MessageControl']['Status'] ?? 'Error') !== 'Success'
+            ) {
                 throw new \Exception("FastPay upload failed: " . json_encode($responseData));
             }
 
+            // ✅ SAVE FILE (OPTIONAL)
             $storedPath = $uploadedFile->store('uploads/fastpay/' . now()->format('Y/m'), 'local');
-
-            Excel::import(new FileDataImport($fileRecord->id), $uploadedFile);
-
-            $totalAmount = FileDetail::where('file_id', $fileRecord->id)->sum('amount');
-            $rowCount    = FileDetail::where('file_id', $fileRecord->id)->count();
 
             $fileRecord->update([
                 'file_path'        => $storedPath,
@@ -116,25 +164,32 @@ class FilesDetailsController extends Controller
                 'status'           => 'uploaded',
             ]);
 
-            return redirect()->route('files.index')
-                ->with('success', "File processed: {$rowCount} records imported, £" . number_format($totalAmount, 2) . " total – uploaded to FastPay");
+            return redirect()->route('files.details')
+                ->with('success', "File processed: {$rows->count()} records, £" . number_format($totalAmount, 2));
 
         } catch (\Exception $e) {
-            if (isset($storedPath) && Storage::disk('local')->exists($storedPath)) {
-                Storage::disk('local')->delete($storedPath);
-            }
+
             FileDetail::where('file_id', $fileRecord->id)->delete();
-            $fileRecord->update(['status' => 'failed', 'fastpay_response' => $e->getMessage()]);
-            Log::error('Import + FastPay failed', ['error' => $e->getMessage()]);
-            return redirect()->back()->with('error', 'Processing failed: ' . $e->getMessage());
+
+            $fileRecord->update([
+                'status' => 'failed',
+                'fastpay_response' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
-    public function export($id)
-    {
-        $file = File::findOrFail($id);
+  public function export($id)
+{
+    $file = File::findOrFail($id);
 
-        return Excel::download(new class($file->id) implements FromCollection, WithHeadings {
+    // ✅ File name format: DDPULTD_YYYYMMDD.xlsx
+    $fileName = 'DDPULTD_' . \Carbon\Carbon::parse($file->collection_date)->format('Ymd') . '.xlsx';
+
+    return Excel::download(
+        new class($file->id) implements FromCollection, WithHeadings {
+
             private $fileId;
 
             public function __construct($fileId)
@@ -201,6 +256,54 @@ class FilesDetailsController extends Controller
                     'Notes (Optional)',
                 ];
             }
-        }, 'fastpay-export-' . $file->file_name . '-' . now()->format('Ymd') . '.xlsx');
+
+        },
+        $fileName
+    );
+}
+
+public function syncFastpayStatus($fileId)
+{
+    $file = File::findOrFail($fileId);
+
+    if (!$file->fastpay_file_id) {
+        return;
     }
+
+    $response = Http::withHeaders([
+        'Bearer-Token' => config('services.fastpay.token'),
+        'Accept'       => 'application/json',
+    ])->get(config('services.fastpay.url') . '/api/Transactions?FileId=' . $file->fastpay_file_id);
+
+    $data = $response->json();
+
+    if (!isset($data['Data'])) {
+        return;
+    }
+
+    foreach ($data['Data'] as $txn) {
+
+        FileDetail::where('file_id', $file->id)
+            ->where('dd_reference', $txn['DdReference'] ?? null)
+            ->update([
+                'status' => strtolower($txn['Status'] ?? 'processing')
+            ]);
+    }
+}
+
+
+
+    public function generatePDF()
+    {
+        $data = [
+            'title' => 'My PDF',
+            'date' => date('d-m-Y')
+        ];
+
+        $pdf = PDF::loadView('pdf.simple_pdf', $data);
+
+        return $pdf->download('sample.pdf');
+    }
+
+  
 }

@@ -51,6 +51,10 @@
                             <label>Address <span class="text-danger">*</span></label>
                             <input type="text" name="address" class="form-control" placeholder="Enter address">
                         </div>
+                         <div class="col-md-6">
+                            <label>Map Url <span class="text-danger">*</span></label>
+                            <input type="text" name="map_url" class="form-control" placeholder="Enter map_url">
+                        </div>
                         <div class="col-md-3">
                             <label>Email <span class="text-danger">*</span></label>
                             <input type="email" name="email" class="form-control" placeholder="Enter email">

@@ -1,0 +1,2 @@
+[15-Apr-2026 06:53:31 UTC] PHP Fatal error:  Cannot redeclare App\Http\Controllers\Backend\Home\CustomerDetailsController::export() in /home/anvayafoundation/public_html/DDPU/app/Http/Controllers/Backend/home/CustomerDetailsController.php on line 460
+[02-Jun-2026 06:55:50 UTC] PHP Fatal error:  Cannot declare class App\Services\FastPayService, because the name is already in use in /home/anvayafoundation/public_html/DDPU/config/FastPayService.php on line 7

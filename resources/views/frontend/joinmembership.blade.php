@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
  @include('components.frontend.head')
 </head>
@@ -17,12 +16,29 @@
     padding-bottom: 5px;
     color: #222;
 }
+#address-results {
+    position: absolute;
+    width: 100%;
+    z-index: 9999;
+    max-height: 250px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ddd;
+    display: none;
+}
 
 .preview-table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 20px;
     background: #fff;
+}
+.year-only-picker .flatpickr-months .flatpickr-prev-month,
+.year-only-picker .flatpickr-months .flatpickr-next-month,
+.year-only-picker .flatpickr-current-month .flatpickr-monthDropdown-months,
+.year-only-picker .flatpickr-weekdays,
+.year-only-picker .flatpickr-days {
+    display: none !important;
 }
 
 .preview-table td {
@@ -45,15 +61,14 @@
 
 /* Scrollable preview box */
 #previewContainer {
-    max-height: 420px;      /* adjust height as needed */
+    max-height: 420px;
     overflow-y: auto;
-    padding-right: 10px;    /* avoid scrollbar overlap */
+    padding-right: 10px;
     border: 1px solid #ccc;
     background: #fff;
     border-radius: 6px;
 }
 
-/* Optional smooth scrolling */
 #previewContainer::-webkit-scrollbar {
     width: 8px;
 }
@@ -64,9 +79,190 @@
 #previewContainer::-webkit-scrollbar-track {
     background: #eee;
 }
-
-
 </style>
+
+<style>
+    .employed-field {
+        display: none;
+    }
+    .description-field {
+        display: none;
+    }
+</style>
+
+<!-- SAVE DRAFT MODAL STYLES -->
+<style>
+#draftModalOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.48);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+}
+#draftModalOverlay.open {
+    display: flex;
+}
+#draftModal {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 640px;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+}
+#draftModalHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid #e8e8e8;
+    flex-shrink: 0;
+}
+#draftModalHeader h2 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #222;
+}
+#draftExpiryBadge {
+    font-size: 12px;
+    color: #666;
+    background: #f5f5f5;
+    border-radius: 6px;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid #e8e8e8;
+}
+#draftModalCloseBtn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px;
+    color: #888;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+#draftModalCloseBtn:hover { background: #f5f5f5; }
+#draftModalBanner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 22px;
+    background: #f0faf4;
+    font-size: 13px;
+    color: #2e7d50;
+    border-bottom: 1px solid #c8ebd8;
+    flex-shrink: 0;
+}
+#draftModalBody {
+    overflow-y: auto;
+    padding: 18px 22px 22px;
+    flex: 1;
+}
+#draftModalBody::-webkit-scrollbar { width: 6px; }
+#draftModalBody::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+.dm-step-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: #aaa;
+    margin: 0 0 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.dm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+    margin-bottom: 20px;
+}
+.dm-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.dm-field.full {
+    grid-column: 1 / -1;
+}
+.dm-field-label {
+    font-size: 11px;
+    color: #aaa;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.dm-field-value {
+    font-size: 13px;
+    color: #333;
+    background: #f7f7f7;
+    border-radius: 6px;
+    padding: 6px 10px;
+    min-height: 30px;
+    word-break: break-word;
+    border: 1px solid #ececec;
+}
+.dm-field-value.ta {
+    white-space: pre-wrap;
+    max-height: 80px;
+    overflow-y: auto;
+    font-size: 12px;
+}
+.dm-empty {
+    text-align: center;
+    padding: 32px 0;
+    color: #bbb;
+    font-size: 14px;
+}
+#draftModalFooter {
+    padding: 12px 22px;
+    border-top: 1px solid #e8e8e8;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 10px;
+}
+#draftClearBtn {
+    font-size: 13px;
+    color: #c0392b;
+    background: transparent;
+    border: 1px solid #e0b0b0;
+    border-radius: 6px;
+    padding: 7px 16px;
+    cursor: pointer;
+}
+#draftClearBtn:hover { background: #fff0ee; }
+#draftCloseFooterBtn {
+    font-size: 13px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 7px 22px;
+    cursor: pointer;
+    color: #333;
+}
+#draftCloseFooterBtn:hover { background: #f5f5f5; }
+</style>
+
 <body class="index-page">
 <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
@@ -79,11 +275,10 @@
       <div class="container">
         <div class="row">
           <div class="col-12 col-sm-12 col-md-12 col-lg-12 col-xl-12">
-            <h1>What is DDPU?</h1>
+            <h1>Join Membership</h1>
             <ul class="bread-list">
               <li><a href="{{ route('frontend.index') }}">Home<i class="fa fa-angle-right"></i></a></li>
-              <li><a href="#">About Us<i class="fa fa-angle-right"></i></a></li>
-              <li class="active"><a href="javascript:void(0)">What is DDPU?</a></li>
+              <li class="active"><a href="javascript:void(0)">Join Membership</a></li>
             </ul>
           </div>
         </div>
@@ -96,6 +291,8 @@
         <h2>Application for Membership of <br>Doctors and Dentists Protection Union</h2>
     </div>
     <div class="container">
+        <div class="custom-top-sec"></div>
+        
         <div id="progressWrapper" class="creative-progress">
             <div class="progress-line">
                 <div class="progress-fill"></div>
@@ -107,8 +304,7 @@
                 <li data-step="4"><span>Step 4</span></li>
                 <li data-step="5"><span>Step 5</span></li>
                 <li data-step="6"><span>Step 6</span></li>
-                <li data-step="7"><span>Step 7</span></li>
-            </ul>
+                </ul>
         </div>
 
         <div class="row">
@@ -139,19 +335,21 @@
                             </div>
 
                             <div class="col-md-6">
-                                <input type="text" class="form-control af-registration-year-picker"
-                                    id="af-registration-year-picker" placeholder="Year of above registration (YYYY)"
-                                    name="registration_year">
+                                <select class="form-select" id="af-registration-year-picker" name="registration_year">
+                                    <option value="" disabled selected>Year of Above Registration (YYYY)</option>
+                                </select>
+                            
                             </div>
-
+                            
+                            
                             <div class="col-md-6">
-                                <input type="text" class="form-control af-qualification-year-picker"
-                                    id="af-qualification-year-picker" placeholder="Year of qualification (YYYY)"
-                                    name="qualification_year">
+                                <select class="form-select" id="af-qualification-year-picker" name="qualification_year">
+                                    <option value="" disabled selected>Year of Qualification (YYYY)</option>
+                                </select>
                             </div>
 
                             <div class="col-12">
-                                <input type="text" class="form-control" id="app-form-specialty" placeholder="Specialty"
+                                <input type="text" class="form-control" id="app-form-specialty" placeholder="Enter the Specialty"
                                     name="specialty">
                             </div>
 
@@ -165,26 +363,37 @@
                             <div class="app-form-title-subsec">
                                 <h4>Please provide following details as they appear in GMC or GDC record</h4>
                             </div>
-
-                            <div class="col-md-4">
-                                <input type="text" class="form-control" placeholder="First name"
+                            <div class="col-md-2">
+                                    <select class="form-select" name="title" id="app-form-title">
+                                        <option value="" disabled selected>Title</option>
+                                        <option value="Dr.">Dr</option>
+                                        <option value="Mr.">Mr</option>
+                                        <option value="Ms.">Mrs</option>
+                                        <option value="Miss.">Miss</option>
+                                        <option value="Prof.">Prof</option>
+                                    </select>
+                                </div>
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" placeholder="Enter the First name"
                                     id="app-form-first-name" name="first_name">
                             </div>
 
                             <div class="col-md-4">
-                                <input type="text" class="form-control" placeholder="Middle name"
+                                <input type="text" class="form-control" placeholder="Enter the Middle name"
                                     id="app-form-middle-name" name="middle_name">
                             </div>
 
-                            <div class="col-md-4">
-                                <input type="text" class="form-control" placeholder="Last name"
+                            <div class="col-md-3">
+                                <input type="text" class="form-control" placeholder="Enter the Last name"
                                     id="app-form-last-name" name="last_name">
                             </div>
 
-                            <div class="col-6">
-                                <input type="text" class="form-control app-date-picker"
-                                    id="app-form-date-of-birth" placeholder="Date of Birth (DD/MM/YYYY)"
+                            <div class="col-md-6">
+                                <input type="text" class="form-control"
+                                    id="app-form-date-of-birth"
+                                    placeholder="Date of Birth (DD/MM/YYYY)"
                                     name="date_of_birth">
+                                <small id="dobError" class="text-danger" style="display:none;">You must be at least 18 years old.</small>
                             </div>
 
                             <div class="col-md-6">
@@ -195,35 +404,50 @@
                                     <option value="Other">Other</option>
                                 </select>
                             </div>
-                            <div class="col-6">
-                                <input type="text" class="form-control" id="app-form-postal-code"
-                                placeholder="Postal Code" maxlength="10" name="postal-code"
-                                oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9\s-]/g,'')">
+                            <div class="col-md-6 position-relative">
+                                <input type="text"
+                                       class="form-control"
+                                       id="app-form-postal-code"
+                                       placeholder="Enter the Postal Code"
+                                       maxlength="10"
+                                       name="postal-code"
+                                       autocomplete="off"
+                                       oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9\s-]/g,'')">
+                            
+                                <ul id="address-results"
+                                    class="list-group address-dropdown"
+                                    style="position:absolute; z-index:1000; width:100%; max-height:200px; overflow-y:auto; display:none;">
+                                </ul>
                             </div>
-                            <div class="col-6">
+                            
+                            <div class="col-md-6">
                                 <input type="text" class="form-control" id="app-form-address-line-one"
-                                    placeholder="Address Line 1" name="address_line_1">
+                                       placeholder="Address Line 1" name="address_line_1">
                             </div>
-
-                            <div class="col-6">
+                            
+                            <div class="col-md-6">
                                 <input type="text" class="form-control" id="app-form-address-line-two"
-                                    placeholder="Address Line 2" name="address_line_2">
+                                       placeholder="Address Line 2" name="address_line_2">
                             </div>
-
-                            <div class="col-6">
-                                <input type="text" class="form-control" id="app-form-city" placeholder="City"
-                                    name="city">
+                            
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" id="app-form-city" placeholder="Enter the City"
+                                       name="city">
                             </div>
-
-                            <div class="col-6">
+                            
+                            <div class="col-md-6">
                                 <select class="form-select" id="app-form-country" name="country">
-                                    <option disabled selected>Select Country</option>
+                                    <option value="" disabled selected>Select Country</option>
                                     @foreach($countries as $country)
                                         <option value="{{ $country->name }}">{{ $country->name }}</option>
                                     @endforeach
                                 </select>
-                             </div>
+                                <div class="invalid-feedback" style="color: red; display: none;">
+                                    Please select a country
+                                </div>
+                            </div>
                             <hr>
+
 
                             <div class="app-form-title-subsec">
                                 <h4>Address on which you would like to be contacted if different from above</h4>
@@ -238,27 +462,32 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="col-6">
+                            <div class="col-md-6 position-relative">
                                 <input type="text" class="form-control" id="contact-postal-code"
-                                placeholder="Postal Code" maxlength="10" name="contact_postal_code"
-                                oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9\s-]/g,'')">
-
+                                    placeholder="Enter the Postal Code" maxlength="10" name="contact_postal_code"
+                                    autocomplete="off"
+                                    oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9\s-]/g,'')">
+                            
+                                <ul id="contact-address-results"
+                                    class="list-group address-dropdown"
+                                    style="position:absolute; z-index:1000; width:100%; max-height:200px; overflow-y:auto; display:none;">
+                                </ul>
                             </div>
-                            <div class="col-6">
+                            <div class="col-md-6">
                                 <input type="text" class="form-control" id="contact-address-line-one"
                                     placeholder="Address Line 1" name="contact_address_line_1">
                             </div>
 
-                            <div class="col-6">
+                            <div class="col-md-6">
                                 <input type="text" class="form-control" id="contact-address-line-two"
                                     placeholder="Address Line 2" name="contact_address_line_2">
                             </div>
-                            <div class="col-6">
+                            <div class="col-md-6">
                                 <input type="text" class="form-control" id="contact-city"
                                 placeholder="City" name="contact_city">
 
                             </div>
-                            <div class="col-12">
+                            <div class="col-md-12">
                                 <select class="form-select" id="contact-country" name="contact_country">
                                     <option disabled selected>Select Country</option>
                                     @foreach($countries as $country)
@@ -296,23 +525,23 @@
                                     <input type="tel" class="form-control" id="app-form-telephone-day"
                                         placeholder="Telephone (Day)" minlength="10" maxlength="15"
                                         name="telephone_day"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                                 </div>
 
                                 <!-- Telephone Evening -->
                                 <div class="col-md-4">
                                     <input type="tel" class="form-control" id="app-form-telephone-evening"
-                                        placeholder="Telephone (Evening)" minlength="10" maxlength="15"
+                                        placeholder="Enter the Telephone (Evening)" minlength="10" maxlength="15"
                                         name="telephone_evening"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')" required> 
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"> 
                                 </div>
 
                                 <!-- Mobile Number -->
                                 <div class="col-md-4">
                                     <input type="tel" class="form-control" id="app-form-mobile-number"
-                                        placeholder="Mobile Number" minlength="10" maxlength="15"
+                                        placeholder="Enter the Mobile Number" minlength="10" maxlength="15"
                                         name="mobile_number"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                        oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
                                 </div>
 
                                 <div class="app-form-title-subsec"><h4>Security</h4></div>
@@ -320,26 +549,26 @@
                                 <!-- Primary Email -->
                                 <div class="col-md-6">
                                     <input type="email" class="form-control" id="app-form-primary-email"
-                                        placeholder="Primary Email" name="primary_email" required>
+                                        placeholder="Enter the Primary Email" name="primary_email" required>
                                 </div>
 
                                 <!-- Secondary Email (Optional) -->
                                 <div class="col-md-6">
                                     <input type="email" class="form-control" id="app-form-secondary-email-optional"
-                                        placeholder="Secondary Email (Optional)" name="secondary_email" required>
+                                        placeholder="Enter the Secondary Email (Optional)" name="secondary_email" required>
                                 </div>
 
                                 <!-- Username -->
                                 <div class="col-md-4">
                                     <input type="text" class="form-control" id="app-form-select-username"
-                                        placeholder="Enter a Username" name="username" required>
+                                        placeholder="Enter the Enter a Username" name="username" required>
                                 </div>
 
                                 <!-- Password -->
                                 <div class="col-md-4">
                                     <div class="position-relative">
                                         <input type="password" class="form-control" id="app-form-select-password"
-                                            placeholder="Enter a Password" name="password" required>
+                                            placeholder="Enter the Enter a Password" name="password" required>
                                         <i class="fa-solid fa-eye toggle-password" data-target="#app-form-select-password" style="cursor:pointer;"></i>
                                     </div>
                                 </div>
@@ -348,7 +577,7 @@
                                 <div class="col-md-4">
                                     <div class="position-relative">
                                         <input type="password" class="form-control" id="app-form-verify-password"
-                                            placeholder="Verify Password" name="confirm_password" required>
+                                            placeholder="Enter the Verify Password" name="confirm_password" required>
                                         <i class="fa-solid fa-eye toggle-password" data-target="#app-form-verify-password" style="cursor:pointer;"></i>
                                     </div>
                                 </div>
@@ -378,56 +607,72 @@
                             <h3>Step 3</h3>
                         </div>
 
-                        <div class="app-form-title-subsec"><h4>Job Title and Grade</h4></div>
 
+                        <div class="app-form-title-subsec">
+                            <h4>Job Title and Grade</h4>
+                        </div>
+                        
                         <form id="step3Form" class="row g-3">
-
-                            <div class="col-md-12">
-                                <textarea class="form-control app-form-textarea-custom-sec" id="app-form-desc-of-current-role"
-                                    placeholder="Description of Current Role" rows="4" name="current_role_description"></textarea>
-                            </div>
-
+                        
+                            <!-- Employment Status -->
                             <div class="col-md-6">
                                 <select class="form-select" id="emp-status" name="employment_status">
-                                    <option disabled selected>Are you employed or self employed ?</option>
+                                    <option value="" disabled selected>Are you employed or self employed ?</option>
                                     <option value="employed">Employed</option>
                                     <option value="self-employed">Self Employed</option>
                                 </select>
                             </div>
-
+                        
+                            <!-- EMPLOYED FIELDS -->
                             <div class="col-md-6 employed-field">
-                                <input type="text" class="form-control" id="current-employer"
-                                    placeholder="Enter Current Employer" name="current_employer">
+                                <input type="text" class="form-control"
+                                    id="current-employer"
+                                    placeholder="Enter Current Employer"
+                                    name="current_employer">
                             </div>
-
+                        
                             <div class="col-md-6 employed-field">
-                                <input type="text" class="form-control" id="employment-grade"
-                                    placeholder="Enter Grade in which employed" name="employment_grade">
+                                <input type="text" class="form-control"
+                                    id="employment-grade"
+                                    placeholder="Enter Grade in which employed"
+                                    name="employment_grade">
                             </div>
-
+                        
                             <div class="col-md-6 employed-field">
-                                <input type="text" class="form-control" id="lead-employer"
-                                    placeholder="Lead Employer (If you are a trainee)" name="lead_employer">
+                                <input type="text" class="form-control"
+                                    id="lead-employer"
+                                    placeholder="Main place of work"
+                                    name="lead_employer">
                             </div>
-
+                        
+                            <!-- DESCRIPTION (always visible when option selected) -->
+                            <div class="col-md-12 description-field">
+                                <textarea class="form-control app-form-textarea-custom-sec"
+                                    id="app-form-desc-of-current-role"
+                                    placeholder="Description of Current Role"
+                                    rows="4"
+                                    name="current_role_description"></textarea>
+                            </div>
+                        
+                            <!-- BUTTONS -->
                             <div class="col-md-12">
                                 <div class="row app-form-custom-btn-row">
-
+                        
                                     <div class="col-4">
-                                        <button type="button" value="save-draft" class="form-control btn-back app-form-btn">Previous</button>
+                                        <button type="button" class="form-control btn-back app-form-btn">Previous</button>
                                     </div>
-
+                        
                                     <div class="col-4">
                                         <button type="button" value="save-draft" class="form-control app-form-btn">Save Draft</button>
                                     </div>
-
+                        
                                     <div class="col-4">
-                                        <button type="button" value="Continue" class="btn-next btn-success form-control app-form-btn">Continue</button>
+                                        <button type="button" class="btn-next btn-success form-control app-form-btn">Continue</button>
                                     </div>
-
+                        
                                 </div>
                             </div>
-
+                        
                         </form>
                     </div>
 
@@ -445,7 +690,7 @@
 <br>
                             <p>The responsibility to ensure that you have adequate Professional Negligence indemnity rests solely with you. Our cover is strictly limited to providing professional defence. Our standard membership does not provide Professional Negligence indemnity for any work.</p>
 <br>
-                            <p>Professional Negligence indemnity for NHS work is usually provided by NHS’s own indemnity scheme. Therefore, you would usually require own Professional Negligence indemnity only for work outside the NHS (private practice) or for work in the NHS that is done outside of the employment contract (Category 2 or Fee-Paying work). If you are unsure if you have adequate Professional Negligence indemnity for the work you do or are not sure whether you need professional negligence indemnity, please write to us and seek advice.</p>
+                            <p>Professional Negligence indemnity for NHS work is usually provided by NHS's own indemnity scheme. Therefore, you would usually require own Professional Negligence indemnity only for work outside the NHS (private practice) or for work in the NHS that is done outside of the employment contract (Category 2 or Fee-Paying work). If you are unsure if you have adequate Professional Negligence indemnity for the work you do or are not sure whether you need professional negligence indemnity, please write to us and seek advice.</p>
 <br>
                             <p>If you do require Professional Negligence indemnity for any work, we may be able to refer you to specialist insurance brokers from who you may separately purchase this cover.</p>
                         </div>
@@ -514,7 +759,7 @@
                         <form id="step5Form" class="row g-3">
 
                             <div class="col-12">
-                                <label class="form-label"><strong>Q.</strong> Please provide details of any concerns raised about your conduct, capability or health in the past five (5) years. This should include any formal and/or disciplinary investigation by your contracting body, your employer or those who hold your performer’s list registration.</label>
+                                <label class="form-label"><strong>Q.</strong> Please provide details of any concerns raised about your conduct, capability or health in the past five (5) years. This should include any formal and/or disciplinary investigation by your contracting body, your employer or those who hold your performer's list registration.</label>
                                 <textarea class="form-control app-form-textarea-custom-sec" id="pre-issue-q31"
                                     rows="4" placeholder="Enter details here..." name="issue_q31"></textarea>
                             </div>
@@ -526,7 +771,7 @@
                             </div>
 
                             <div class="col-12">
-                                <label class="form-label"><strong>Q.</strong> Have you been subject to any Employer’s disciplinary investigation, inquiry or other proceedings, GMC/GDC investigation, inquiry or other proceedings, Coroners’ Inquest or Fatal Accident Inquiry and/or criminal prosecution in the past ten (10) years?</label>
+                                <label class="form-label"><strong>Q.</strong> Have you been subject to any Employer's disciplinary investigation, inquiry or other proceedings, GMC/GDC investigation, inquiry or other proceedings, Coroners' Inquest or Fatal Accident Inquiry and/or criminal prosecution in the past ten (10) years?</label>
                                 <textarea class="form-control app-form-textarea-custom-sec" id="pre-issue-q33"
                                     rows="4" placeholder="Enter details here..." name="issue_q33"></textarea>
                             </div>
@@ -598,10 +843,13 @@
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <input type="text" class="form-control" id="prev-membership-expiry"
-                                    placeholder="Expiration Date of membership/policy" name="previous_membership_expiry"
-                                    onfocus="this.type='date'" onblur="if(!this.value) this.type='text';">
-                            </div>
+                            <input type="text"
+                                class="form-control"
+                                id="prev-membership-expiry"
+                                placeholder="Expiration Date of membership/policy"
+                                name="previous_membership_expiry">
+                        </div>
+
 
                             <div class="col-md-12">
                                 <div class="row app-form-custom-btn-row">
@@ -626,9 +874,8 @@
 
                         </form>
                     </div>
-
-                   <!-- STEP 7 (FINAL VERSION) -->
-                <div id="step7Box" class="slider-step af-border-sec" data-back-to="step6Box" data-step="7">
+                   <!-- STEP 7 (PREVIEW - FINAL) -->
+                 <div id="step7Box" class="slider-step af-border-sec" data-back-to="step6Box" data-step="7">
 
                         <div class="application-form-title-sec creative-med-title">
                             <div class="title-icon"><i class="fa-solid fa-user"></i></div>
@@ -652,7 +899,7 @@
                             <div class="form-check app-form-checkbox-custom-sec">
                                 <input class="form-check-input" type="checkbox" id="terms_checkbox">
                                 <label class="form-check-label" for="terms_checkbox">
-                                    I agree to the <a href="/terms" target="_blank">Terms & Conditions</a>.
+                                    I agree that the above information is correct.
                                 </label>
                             </div>
                             <small id="termsError" style="color:red; display:none;">You must accept the terms before submitting.</small>
@@ -684,665 +931,885 @@
         </div>
 
     </div>
+    </div>
 </section>
 
-
-     <section class="join-membership-sec">
-        <div class="container">
-            <div class="row">
-
-            <div class="col-md-8">
-                <div class="join-membership-content-sec">
-                <h2 class="join-membership-title">{{ $joinmembership->heading }}</h2>
-                <p>{{ $joinmembership->description }}</p>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="join-membership-btn-sec">
-                <a href="#" class="btn-dark btn-lg">
-                    <span>Join Now</span>
-                </a>
-                </div>
-            </div>
-
-            </div>
-        </div>
-   </section>
   </main>
         @include('components.frontend.footer')
-
-
-
-
 
   <!-- Scroll Top -->
   <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i
       class="bi bi-arrow-up-short"></i></a>
 
-  <!-- Preloader -->
-   
   <!--<div id="preloader"></div>-->
 
-      @include('components.frontend.main-js')
+      @include('components.frontend.main-js')  
+
+<!-- ============================================================
+     SAVE DRAFT MODAL HTML
+============================================================ -->
+<div id="draftModalOverlay" role="dialog" aria-modal="true" aria-labelledby="draftModalTitle">
+  <div id="draftModal">
+
+    <div id="draftModalHeader">
+      <h2 id="draftModalTitle">
+        <i class="fa-solid fa-floppy-disk"></i>
+        Draft Saved
+      </h2>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div id="draftExpiryBadge">
+          <i class="fa-solid fa-clock"></i>
+          <span id="draftExpiryText">Expires in 24h</span>
+        </div>
+        <button id="draftModalCloseBtn" aria-label="Close">&times;</button>
+      </div>
+    </div>
+
+    <div id="draftModalBanner">
+      <i class="fa-solid fa-circle-check"></i>
+      Your progress has been saved. You can return anytime within 24 hours to continue.
+    </div>
+
+    <div id="draftModalBody"></div>
+
+    <div id="draftModalFooter">
+      <button id="draftClearBtn">
+        <i class="fa-solid fa-trash" style="margin-right:5px;"></i>Clear Draft
+      </button>
+      <button id="draftCloseFooterBtn">Close</button>
+    </div>
+
+  </div>
+</div>
+<!-- END SAVE DRAFT MODAL HTML -->
+
+      <script>
+          document.addEventListener("click", function (e) {
+    if (e.target.classList.contains("btn-next")) {
+        setTimeout(function () {
+            const target = document.querySelector(".custom-top-sec");
+            if (target) {
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }, 200);
+    }
+});
+      </script>
+      
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const apiKey = "PP19-FH99-ZC91-NN35";
+    const postalInput = document.getElementById("app-form-postal-code");
+    const resultBox  = document.getElementById("address-results");
+
+    let typingTimer;
+    const delay = 400;
+
+    function formatUKPostcode(postcode) {
+        postcode = postcode.toUpperCase().replace(/\s+/g, '');
+        if (postcode.length > 3) {
+            postcode = postcode.slice(0, -3) + " " + postcode.slice(-3);
+        }
+        return postcode;
+    }
+
+    postalInput.addEventListener("input", function () {
+        clearTimeout(typingTimer);
+        let text = this.value.trim();
+        text = formatUKPostcode(text);
+        typingTimer = setTimeout(() => {
+            if (text.length >= 3) {
+                showSearching();
+                findAddress(text);
+            } else {
+                resultBox.style.display = "none";
+            }
+        }, delay);
+    });
+
+    function showSearching() {
+        resultBox.innerHTML = `<li class="list-group-item text-muted">🔍 Searching address...</li>`;
+        resultBox.style.display = "block";
+    }
+
+    function findAddress(searchText, containerId = "") {
+        const urlBase = "https://api.addressy.com/Capture/Interactive/Find/v1.10/json3.ws";
+        let url = `${urlBase}?Key=${apiKey}&Text=${encodeURIComponent(searchText)}&IsMiddleware=true`;
+        if (containerId) url += `&Container=${containerId}`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                resultBox.innerHTML = "";
+                if (!data.Items || data.Items.length === 0) {
+                    resultBox.innerHTML = `<li class="list-group-item text-danger">❌ No address found</li>`;
+                    resultBox.style.display = "block";
+                    return;
+                }
+                resultBox.style.display = "block";
+                data.Items.forEach(item => {
+                    const li = document.createElement("li");
+                    li.className = "list-group-item list-group-item-action";
+                    li.innerText = item.Text + (item.Description ? " - " + item.Description : "");
+                    li.addEventListener("click", () => {
+                        if (item.Type !== "Address") {
+                            showSearching();
+                            findAddress(searchText, item.Id);
+                        } else {
+                            postalInput.value = item.Text;
+                            retrieveAddress(item.Id);
+                            resultBox.innerHTML = "";
+                            resultBox.style.display = "none";
+                        }
+                    });
+                    resultBox.appendChild(li);
+                });
+            })
+            .catch(err => {
+                console.error("Find API Error:", err);
+                resultBox.innerHTML = `<li class="list-group-item text-danger">⚠️ Error fetching address</li>`;
+                resultBox.style.display = "block";
+            });
+    }
+
+    function retrieveAddress(id) {
+        const url = `https://api.addressy.com/Capture/Interactive/Retrieve/v1.00/json3.ws?Key=${apiKey}&Id=${id}`;
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.Items || data.Items.length === 0) { alert("No address found"); return; }
+                const addr = data.Items[0];
+                document.getElementById("app-form-address-line-one").value = addr.Line1 || '';
+                document.getElementById("app-form-address-line-two").value = addr.Line2 || '';
+                document.getElementById("app-form-city").value = addr.City || '';
+                postalInput.value = addr.PostalCode || postalInput.value;
+                const countryName = addr.CountryName || '';
+                const select = document.getElementById("app-form-country");
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].text.toLowerCase() === countryName.toLowerCase()) { select.selectedIndex = i; break; }
+                }
+            })
+            .catch(err => console.log("Retrieve Error:", err));
+    }
+
+    document.addEventListener("click", function (e) {
+        if (!resultBox.contains(e.target) && e.target !== postalInput) {
+            resultBox.style.display = "none";
+        }
+    });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const apiKey = "PP19-FH99-ZC91-NN35";
+    const contactPostalInput = document.getElementById("contact-postal-code");
+    const contactResultBox   = document.getElementById("contact-address-results");
+
+    let contactTypingTimer;
+    const delay = 400;
+
+    function formatUKPostcode(postcode) {
+        postcode = postcode.toUpperCase().replace(/\s+/g, '');
+        if (postcode.length > 3) { postcode = postcode.slice(0, -3) + " " + postcode.slice(-3); }
+        return postcode;
+    }
+
+    contactPostalInput.addEventListener("input", function () {
+        clearTimeout(contactTypingTimer);
+        let text = this.value.trim();
+        text = formatUKPostcode(text);
+        contactTypingTimer = setTimeout(() => {
+            if (text.length >= 3) { showContactSearching(); findContactAddress(text); }
+            else { contactResultBox.style.display = "none"; }
+        }, delay);
+    });
+
+    function showContactSearching() {
+        contactResultBox.innerHTML = `<li class="list-group-item text-muted">🔍 Searching address...</li>`;
+        contactResultBox.style.display = "block";
+    }
+
+    function findContactAddress(searchText, containerId = "") {
+        const urlBase = "https://api.addressy.com/Capture/Interactive/Find/v1.10/json3.ws";
+        let url = `${urlBase}?Key=${apiKey}&Text=${encodeURIComponent(searchText)}&IsMiddleware=true`;
+        if (containerId) url += `&Container=${containerId}`;
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                contactResultBox.innerHTML = "";
+                if (!data.Items || data.Items.length === 0) {
+                    contactResultBox.innerHTML = `<li class="list-group-item text-danger">❌ No address found</li>`;
+                    contactResultBox.style.display = "block";
+                    return;
+                }
+                contactResultBox.style.display = "block";
+                data.Items.forEach(item => {
+                    const li = document.createElement("li");
+                    li.className = "list-group-item list-group-item-action";
+                    li.innerText = item.Text + (item.Description ? " - " + item.Description : "");
+                    li.addEventListener("click", () => {
+                        if (item.Type !== "Address") { showContactSearching(); findContactAddress(searchText, item.Id); }
+                        else { contactPostalInput.value = item.Text; retrieveContactAddress(item.Id); contactResultBox.innerHTML = ""; contactResultBox.style.display = "none"; }
+                    });
+                    contactResultBox.appendChild(li);
+                });
+            })
+            .catch(err => {
+                console.error("Contact Find API Error:", err);
+                contactResultBox.innerHTML = `<li class="list-group-item text-danger">⚠️ Error fetching address</li>`;
+                contactResultBox.style.display = "block";
+            });
+    }
+
+    function retrieveContactAddress(id) {
+        const url = `https://api.addressy.com/Capture/Interactive/Retrieve/v1.00/json3.ws?Key=${apiKey}&Id=${id}`;
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.Items || data.Items.length === 0) { alert("No address found"); return; }
+                const addr = data.Items[0];
+                document.getElementById("contact-address-line-one").value = addr.Line1 || '';
+                document.getElementById("contact-address-line-two").value = addr.Line2 || '';
+                document.getElementById("contact-city").value             = addr.City  || '';
+                contactPostalInput.value                                   = addr.PostalCode || contactPostalInput.value;
+                const countryName    = addr.CountryName || '';
+                const contactCountry = document.getElementById("contact-country");
+                for (let i = 0; i < contactCountry.options.length; i++) {
+                    if (contactCountry.options[i].text.toLowerCase() === countryName.toLowerCase()) { contactCountry.selectedIndex = i; break; }
+                }
+            })
+            .catch(err => console.error("Contact Retrieve Error:", err));
+    }
+
+    document.addEventListener("click", function (e) {
+        if (!contactResultBox.contains(e.target) && e.target !== contactPostalInput) {
+            contactResultBox.style.display = "none";
+        }
+    });
+});
+</script>
+
 <script>
 /* ============================================================
 =  STEP 7 - PREVIEW GENERATOR
 ============================================================ */
-
-/* Build preview when entering Step 7 */
 document.addEventListener("DOMContentLoaded", function () {
-
-    // Detect when user moves INTO Step 7
     document.querySelectorAll(".btn-next").forEach(btn => {
         btn.addEventListener("click", function () {
-            const next = this.closest(".slider-step").dataset.nextStep;
-            if (next === "step7Box") {
-                generatePreview();
-            }
+            const nextStep = this.dataset.nextStep || this.closest(".slider-step").dataset.nextStep;
+            if (nextStep === "step7Box") { generatePreview(); }
         });
     });
 });
 
-  /* Generate the preview (2 columns layout like PDF) */
 function generatePreview() {
     const previewBox = document.getElementById("previewContainer");
-    previewBox.innerHTML = ""; 
-
+    if (!previewBox) return;
+    previewBox.innerHTML = "";
     const fields = document.querySelectorAll(
         "#step1box [name],#step2Box [name],#step3Box [name],#step4Box [name],#step5Box [name],#step6Box [name]"
     );
-
     let html = `<div class="preview-section-title">Application Summary</div>`;
     html += `<table class="preview-table">`;
-
     fields.forEach(field => {
-        let label = formatLabel(field.name);
+        let labelText = "";
+        if (field.id) { const lbl = document.querySelector(`label[for="${field.id}"]`); if (lbl) labelText = lbl.innerText.trim(); }
+        if (!labelText) { const parentLabel = field.closest("label"); if (parentLabel) labelText = parentLabel.innerText.trim(); }
+        if (!labelText) { const parentDiv = field.closest(".col-12, .col-md-6, .col-md-12"); if (parentDiv) { const lbl = parentDiv.querySelector("label"); if (lbl) labelText = lbl.innerText.trim(); } }
+        if (!labelText && field.placeholder) labelText = field.placeholder;
+        if (!labelText) { labelText = field.name.replace(/_/g, " ").toUpperCase(); }
         let value = "";
-
+        if (field.name === "pni_required_no") { return; }
         if (field.type === "checkbox") {
-            value = field.checked ? "Yes" : "No";
+            if (field.name === "pni_required_yes" || field.name === "pni_required_no") {
+                const yes = document.querySelector('input[name="pni_required_yes"]')?.checked;
+                const no  = document.querySelector('input[name="pni_required_no"]')?.checked;
+                value = yes ? "Yes" : no ? "No" : "<em>NA</em>";
+                labelText = "Do you require Professional Negligence indemnity?";
+            } else {
+                value = field.checked ? "Yes" : "No";
+            }
         } else if (field.type === "file") {
             value = field.files.length ? field.files[0].name : "Not uploaded";
+        } else if (field.tagName.toLowerCase() === "select") {
+            value = field.selectedIndex > 0 ? field.options[field.selectedIndex].text.toUpperCase() : "<em>NA</em>";
         } else {
-            value = field.value.trim() || "<em>Not provided</em>";
+            value = field.value && field.value.trim() !== "" ? field.value : "<em>NA</em>";
         }
-
-        html += `
-            <tr>
-                <td class="preview-label">${label}</td>
-                <td class="preview-value">${value}</td>
-            </tr>
-        `;
+        html += `<tr><td class="preview-label">${labelText}</td><td class="preview-value">${value}</td></tr>`;
     });
-
     html += `</table>`;
     previewBox.innerHTML = html;
 }
 
-
-
-
-/* Convert "first_name" → "First Name" */
-function formatLabel(name) {
-    return name
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, c => c.toUpperCase());
+function fillFormFromDB(app) {
+    if (!app) return;
+    const steps = ["step1","step2","step3","step4","step5","step6"];
+    steps.forEach(stepKey => {
+        if (!app[stepKey]) return;
+        let stepData = {};
+        try { stepData = typeof app[stepKey] === "string" ? JSON.parse(app[stepKey]) : app[stepKey]; }
+        catch (e) { console.error("Invalid JSON in " + stepKey); return; }
+        Object.entries(stepData).forEach(([name, value]) => {
+            const fields = document.querySelectorAll(`[name="${name}"]`);
+            fields.forEach(field => {
+                if (field.type === "checkbox") { field.checked = value == 1 || value === true; }
+                else if (field.type === "radio") { if (field.value == value) field.checked = true; }
+                else if (field.type !== "file") { field.value = value ?? ""; }
+            });
+        });
+    });
 }
 
-
-/* ============================================================
-=  STEP 7 FINAL SUBMIT (No Step 8)
-============================================================ */
-
-
 document.getElementById("finalSubmitBtn").addEventListener("click", async function () {
-
-    // Validate Terms
     if (!document.getElementById("terms_checkbox").checked) {
         document.getElementById("termsError").style.display = "block";
         return;
     }
-
     document.getElementById("termsError").style.display = "none";
-
-    // Show loading
-    Swal.fire({
-        title: "Submitting...",
-        text: "Please wait",
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading(),
-    });
-
+    Swal.fire({ title: "Submitting...", text: "Please wait", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
     try {
-        const fin = await fetch("{{ route('application.submit') }}", {
+        let fd = new FormData();
+        const fields = document.querySelectorAll("#step1box [name],#step2Box [name],#step3Box [name],#step4Box [name],#step5Box [name],#step6Box [name]");
+        fields.forEach(field => {
+            let value = "";
+            if (field.type === "checkbox") { value = field.checked ? 1 : 0; }
+            else if (field.type === "file") { if (field.files.length > 0) { fd.append(`files[${field.name}]`, field.files[0]); } return; }
+            else { value = field.value; }
+            fd.append(`data[${field.name}]`, value);
+        });
+        const res = await fetch("{{ route('application.submit') }}", {
             method: "POST",
-            headers: { 
-                "X-CSRF-TOKEN": "{{ csrf_token() }}",
-                "Accept": "application/json"
-            }
+            headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}", "Accept": "application/json" },
+            body: fd
         });
-
-        const res = await fin.json();
-
-        if (res.status === "success") {
-            Swal.fire({
-                icon: "success",
-                title: "Application Submitted!",
-                text: "Redirecting...",
-                timer: 2000,
-                showConfirmButton: false
-            });
-
-            setTimeout(() => {
-                window.location.href = "/Signup-form/" + res.application_id;
-            }, 1800);
-
+        const result = await res.json();
+        if (result.status === "success") {
+            Swal.fire({ icon: "success", title: "Application Submitted!", timer: 2000, showConfirmButton: false });
+            setTimeout(() => { window.location.href = "/DDPU/Signup-form/" + result.user_id; }, 1800);
         } else {
-            // Display the backend message exactly as it is
-            Swal.fire({
-                icon: "error",
-                title: "Error",
-                text: res.message  // <-- shows "Email already exists..." now
-            });
+            Swal.fire("Error", result.message, "error");
         }
-
-    } catch (err) {
-        // Network or unexpected errors
-        Swal.fire({
-            icon: "error",
-            title: "Error",
-            text: "Server error. Please try again."
-        });
+    } catch (e) {
+        Swal.fire("Error", "Server error. Please try again.", "error");
     }
 });
-
 </script>
 
       <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-      <!-- Show/Hide Script -->
-                    <script>
-                    document.addEventListener("DOMContentLoaded", function () {
-
-                        const checkbox = document.getElementById("apply_designated_body");
-                        const fields = document.getElementById("designatedBodyFields");
-                        const fileInput = document.getElementById("last-appraisal-output");
-
-                        checkbox.addEventListener("change", function () {
-
-                            if (this.checked) {
-                                fields.style.display = "block";
-                                fileInput.setAttribute("required", "required");
-                            } else {
-                                fields.style.display = "none";
-                                fileInput.removeAttribute("required");
-                                fileInput.value = "";
-                            }
-
-                        });
-                    });
-                    </script>
 
 <script>
 /* =========================================================
 =  GLOBAL CONFIG
 ========================================================= */
 let currentStep = 1;
-const totalSteps = 7;
-
-const stepBoxes = {
-    1:"step1box",2:"step2Box",3:"step3Box",4:"step4Box",
-    5:"step5Box",6:"step6Box",7:"step7Box",8:"step8Box"
-};
-
+const totalSteps = 6;
+const stepBoxes = { 1:"step1box",2:"step2Box",3:"step3Box",4:"step4Box",5:"step5Box",6:"step6Box",7:"step7Box" };
 
 /* =========================================================
-=  SHOW/HIDE STEPS (Slider Animation)
+=  SHOW/HIDE STEPS
 ========================================================= */
-function showStep(step,direction="forward"){
-    const box=document.getElementById(stepBoxes[step]); 
+function showStep(step, direction="forward"){
+    const box = document.getElementById(stepBoxes[step]);
     if(!box) return;
-
     document.querySelectorAll(".slider-step").forEach(el=>{
-        if(el!==box){
-            el.classList.remove("active");
-            el.setAttribute("data-anim",direction==="forward"?"hide-to--left":"hide-to--right");
-        }
+        if(el!==box){ el.classList.remove("active"); el.setAttribute("data-anim", direction==="forward"?"hide-to--left":"hide-to--right"); }
     });
-
     box.classList.add("active");
-    box.setAttribute("data-anim",direction==="forward"?"show-from--right":"show-from--left");
-
+    box.setAttribute("data-anim", direction==="forward"?"show-from--right":"show-from--left");
     updateStepUI(step);
     updateFormHeight();
 }
-
 
 /* =========================================================
 =  PROGRESS BAR
 ========================================================= */
 function updateStepUI(step){
-    const wrap=document.getElementById("progressWrapper");
-    const fill=document.querySelector(".progress-fill");
-    const items=document.querySelectorAll(".progress-steps li");
-
-    if(step===8){ wrap.style.display="none"; return;} else wrap.style.display="block";
-
-    fill.style.width=((step-1)/(totalSteps-1))*100+"%";
-    items.forEach((li,i)=>{ li.classList.remove("active","completed");
+    const wrap  = document.getElementById("progressWrapper");
+    const fill  = document.querySelector(".progress-fill");
+    const items = document.querySelectorAll(".progress-steps li");
+    if(step===7){ wrap.style.display="none"; return; } else wrap.style.display="block";
+    fill.style.width = ((step-1)/(totalSteps-1))*100+"%";
+    items.forEach((li,i)=>{
+        li.classList.remove("active","completed");
         if(i+1<step) li.classList.add("completed");
         if(i+1===step) li.classList.add("active");
     });
 }
 
-
 /* =========================================================
-=  AUTO HEIGHT
+=  HEIGHT & SCROLL
 ========================================================= */
-function updateFormHeight(){
-    const active=document.querySelector(".slider-step.active");
-    if(active) document.getElementById("form-step-wrap").style.minHeight=active.offsetHeight+"px";
+function updateFormHeight() {
+    const active = document.querySelector(".slider-step.active");
+    const wrap   = document.getElementById("form-step-wrap");
+    if (active && wrap) {
+        wrap.style.minHeight = (active.scrollHeight + 20) + "px";
+        wrap.style.overflowY = "auto";
+        wrap.style.overflowX = "hidden";
+    }
 }
 
+document.addEventListener("DOMContentLoaded", function() {
+    const wrapper = document.getElementById("form-step-wrap");
+    wrapper.addEventListener("click", function(e) {
+        const target   = e.target;
+        const btnNext  = target.closest(".btn-next");
+        const btnBack  = target.closest(".btn-back");
+        const btnDraft = target.closest(".btn-save-draft");
+        if (btnNext || btnBack || btnDraft) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (btnNext || btnBack) {
+                const currentStepEl = (btnNext || btnBack).closest(".slider-step");
+                wrapper.style.minHeight = wrapper.offsetHeight + "px";
+                const targetId   = btnNext ? btnNext.getAttribute("data-next-step") : btnBack.getAttribute("data-back-to");
+                const targetStep = document.getElementById(targetId);
+                if (targetStep) { currentStepEl.classList.remove("active"); targetStep.classList.add("active"); setTimeout(updateFormHeight, 50); }
+            }
+        }
+    });
+    updateFormHeight();
+    wrapper.style.display = "block";
+});
 
 /* =========================================================
 =  ERROR HANDLING
 ========================================================= */
-function showError(id,msg){
-    const el=document.getElementById(id); if(!el) return;
-    let err=el.nextElementSibling;
-
+function showError(id, msg){
+    const el = document.getElementById(id); if(!el) return;
+    let err = el.nextElementSibling;
     if(!err || !err.classList.contains("error-msg")){
-        err=document.createElement("div");
+        err = document.createElement("div");
         err.classList.add("error-msg");
-        err.style.color="red"; err.style.fontSize="13px";
+        err.style.color = "red"; err.style.fontSize = "13px";
         el.parentNode.appendChild(err);
     }
-    err.innerText=msg; el.classList.add("is-invalid");
+    err.innerText = msg; el.classList.add("is-invalid");
 }
-
 function clearErrors(){
     document.querySelectorAll(".error-msg").forEach(e=>e.remove());
     document.querySelectorAll(".form-control,.form-select,textarea").forEach(e=>e.classList.remove("is-invalid"));
 }
-const isEmail=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
-
+const isEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
 /* =========================================================
 =  STEP VALIDATION
 ========================================================= */
 function validateStep(step){
-    clearErrors(); let valid=true;
-    const val=id=>document.getElementById(id)?.value.trim();
-
+    clearErrors(); let valid = true;
+    const val = id => document.getElementById(id)?.value.trim();
     if(step===1){
-        if(!val("gmc-gdc-select-sec")){showError("gmc-gdc-select-sec","Required");valid=false;}
-        if(!val("gmc-gdc-registration-number")){showError("gmc-gdc-registration-number","Required");valid=false;}
-        if(!val("af-registration-year-picker")){showError("af-registration-year-picker","Required");valid=false;}
-        if(!val("af-qualification-year-picker")){showError("af-qualification-year-picker","Required");valid=false;}
-        if(!val("app-form-first-name")){showError("app-form-first-name","Required");valid=false;}
-        if(!val("app-form-last-name")){showError("app-form-last-name","Required");valid=false;}
-        if(!val("app-form-date-of-birth")){showError("app-form-date-of-birth","Required");valid=false;}
-        if(!val("gender-select")){showError("gender-select","Required");valid=false;}
-        if(!val("app-form-address-line-one")){showError("app-form-address-line-one","Required");valid=false;}
-                if(!val("app-form-address-line-two")){showError("app-form-address-line-two","Required");valid=false;}
-
-        if(!val("app-form-city")){showError("app-form-city","Required");valid=false;}
-        if(!val("app-form-country")){showError("app-form-country","Required");valid=false;}
-        if(!val("app-form-postal-code")){showError("app-form-postal-code","Required");valid=false;}
-    }
-    if(step===2){
-        if(!val("app-form-primary-email")){showError("app-form-primary-email","Required");valid=false;}
-                if(!val("app-form-telephone-day")){showError("app-form-telephone-day","Required");valid=false;}
-        if(!val("app-form-secondary-email-optional")){showError("app-form-secondary-email-optional","Required");valid=false;}
-        if(!val("app-form-telephone-evening")){showError("app-form-telephone-evening","Required");valid=false;}
-
-        else if(!isEmail(val("app-form-primary-email"))){showError("app-form-primary-email","Invalid Email");valid=false;}
-        if(!val("app-form-select-username")){showError("app-form-select-username","Required");valid=false;}
-        if(!val("app-form-select-password")){showError("app-form-select-password","Required");valid=false;}
-        if(val("app-form-select-password")!==val("app-form-verify-password")){showError("app-form-verify-password","Password Not Match");valid=false;}
-    }
-    if(step===3){
-        if(!val("app-form-desc-of-current-role")){showError("app-form-desc-of-current-role","Required");valid=false;}
-        
-if(!val("emp-status")){
-        showError("emp-status", "Required");
-        valid = false;
-    }        if(val("emp-status")==="employed"){
-            if(!val("current-employer")){showError("current-employer","Required");valid=false;}
-            if(!val("employment-grade")){showError("employment-grade","Required");valid=false;}
+        if(!val("gmc-gdc-select-sec"))          { showError("gmc-gdc-select-sec","Required");          valid=false; }
+        if(!val("gmc-gdc-registration-number")) { showError("gmc-gdc-registration-number","Required"); valid=false; }
+        if(!val("af-registration-year-picker")) { showError("af-registration-year-picker","Required");  valid=false; }
+        if(!val("app-form-title")) { showError("app-form-title","Required"); valid=false; }
+        if(!val("af-qualification-year-picker")){ showError("af-qualification-year-picker","Required"); valid=false; }
+        if(!val("app-form-first-name"))         { showError("app-form-first-name","Required");          valid=false; }
+        if(!val("app-form-last-name"))          { showError("app-form-last-name","Required");           valid=false; }
+        if(!val("app-form-date-of-birth"))      { showError("app-form-date-of-birth","Required");       valid=false; }
+        if(!val("gender-select"))               { showError("gender-select","Required");                valid=false; }
+        if(!val("app-form-address-line-one"))   { showError("app-form-address-line-one","Required");    valid=false; }
+        if(!val("app-form-city"))               { showError("app-form-city","Required");                valid=false; }
+        if(!val("app-form-country"))            { showError("app-form-country","Required");             valid=false; }
+        if(!val("app-form-postal-code"))        { showError("app-form-postal-code","Required");         valid=false; }
+        const sameAsAbove = document.getElementById("same-address-checkbox");
+        if (sameAsAbove && !sameAsAbove.checked) {
+            if (!val("contact-postal-code"))      { showError("contact-postal-code","Required");      valid=false; }
+            if (!val("contact-address-line-one")) { showError("contact-address-line-one","Required"); valid=false; }
+            if (!val("contact-city"))             { showError("contact-city","Required");             valid=false; }
+            if (!val("contact-country"))          { showError("contact-country","Required");          valid=false; }
         }
     }
-if(step === 4 && !document.querySelector(".pni-option:checked")) {
-    document.querySelectorAll(".pni-option").forEach(el => {
-        showError(el.id, "Required");
-    });
-    valid = false;
-}
+    if(step===2){
+        if(!val("app-form-primary-email"))   { showError("app-form-primary-email","Required");   valid=false; }
+        if(!val("app-form-mobile-number"))   { showError("app-form-mobile-number","Required");   valid=false; }
+        else if(!isEmail(val("app-form-primary-email"))) { showError("app-form-primary-email","Required"); valid=false; }
+        if(!val("app-form-select-username")) { showError("app-form-select-username","Required"); valid=false; }
+        if(!val("app-form-select-password")) { showError("app-form-select-password","Required"); valid=false; }
+        if(val("app-form-select-password")!==val("app-form-verify-password")) { showError("app-form-verify-password","Password Not Match"); valid=false; }
+    }
+    if(step===3){
+        if(!val("app-form-desc-of-current-role")) { showError("app-form-desc-of-current-role","Required"); valid=false; }
+        if(!val("emp-status")) { showError("emp-status","Required"); valid=false; }
+        if(val("emp-status")==="employed"){
+            if(!val("current-employer"))  { showError("current-employer","Required");  valid=false; }
+            if(!val("employment-grade"))  { showError("employment-grade","Required");  valid=false; }
+        }
+    }
+    if(step===4 && !document.querySelector(".pni-option:checked")) {
+        document.querySelectorAll(".pni-option").forEach(el=>{ showError(el.id,"Required"); });
+        valid=false;
+    }
     if(step===5){
-        ["pre-issue-q31","pre-issue-q32","pre-issue-q33"].forEach(id=>{
-            if(!val(id)){showError(id,"Required");valid=false;}
-        });
+        ["pre-issue-q31","pre-issue-q32","pre-issue-q33"].forEach(id=>{ if(!val(id)){ showError(id,"Required"); valid=false; } });
     }
     if(step===6){
-        if(!val("claims-q1")){showError("claims-q1","Required");valid=false;}
-        if(!val("claims-q2")){showError("claims-q2","Required");valid=false;}
-
-        if(!val("prev-membership-name")){showError("prev-membership-name","Required");valid=false;}
-        if(!val("prev-membership-expiry")){showError("prev-membership-expiry","Required");valid=false;}
-    }
-    if(step===7){
-        if(!val("last-appraisal-date-sec")){showError("last-appraisal-date-sec","Required");valid=false;}
-        if(!val("revalidation-date-sec")){showError("revalidation-date-sec","Required");valid=false;}
+        if(!val("claims-q1")) { showError("claims-q1","Required"); valid=false; }
+        if(!val("claims-q2")) { showError("claims-q2","Required"); valid=false; }
     }
     return valid;
 }
 
-
-
 /* =========================================================
-=  NEXT BUTTON (MAIN CONTROL with LOADER + SweetAlert)
+=  NEXT BUTTON
 ========================================================= */
-document.querySelectorAll(".btn-next").forEach(btn=>{
-    btn.addEventListener("click",async()=>{
-
-        if(!validateStep(currentStep)) return;
-
-        const box=document.querySelector(`.slider-step[data-step='${currentStep}']`);
-        const form=box.querySelector("form");
-        const final=(btn.value==="submit" && currentStep===7);
-
-        let fd=new FormData(); 
-        fd.append("step",currentStep);
-
-        // append fields automatically
-        form.querySelectorAll("[name]").forEach(inp=>{
-            if(inp.type==="file" && inp.files.length>0) fd.append(`data[${inp.name}]`,inp.files[0]);
-            else if(inp.type==="checkbox") fd.append(`data[${inp.name}]`,inp.checked?1:0);
-            else fd.append(`data[${inp.name}]`,inp.value);
+document.querySelectorAll(".btn-next").forEach(function (btn) {
+    btn.addEventListener("click", async function () {
+        if (!validateStep(currentStep)) return;
+        var box  = document.querySelector(".slider-step[data-step='" + currentStep + "']");
+        var form = box.querySelector("form");
+        var isFinal = (btn.value === "submit" && currentStep === 6);
+        var fd = new FormData();
+        fd.append("step", currentStep);
+        form.querySelectorAll("[name]").forEach(function (inp) {
+            if (inp.type === "file") { if (inp.files.length > 0) { fd.append("data[" + inp.name + "]", inp.files[0]); } }
+            else if (inp.type === "checkbox") { fd.append("data[" + inp.name + "]", inp.checked ? 1 : 0); }
+            else { fd.append("data[" + inp.name + "]", inp.value); }
         });
-
-        // ---- Show Loader ----
-        Swal.fire({
-            title: "Saving...",
-            text: "Please wait",
-            allowOutsideClick: false,
-            didOpen: () => Swal.showLoading(),
-        });
-
-        const save=await fetch("{{ route('application.saveStep') }}",{
-            method:"POST",
-            headers:{"X-CSRF-TOKEN":"{{ csrf_token() }}"},
-            body:fd
-        });
-
-        const res=await save.json();
-
-        if(res.status!=="success"){
-            Swal.fire("Error","Something went wrong!","error");
-            return;
-        }
-
-        // ---- STEP SAVE SUCCESS SweetAlert ----
-        await Swal.fire({
-            icon:"success",
-            title:`Step ${currentStep} Saved Successfully!`,
-            text:"You can continue to next step",
-            timer:1800,
-            showConfirmButton:false
-        });
-
-        // ---- If Final Step Submit ----
-        if(final){
-            const fin=await fetch("{{route('application.submit')}}",{
-                method:"POST",
-                headers:{"X-CSRF-TOKEN":"{{ csrf_token() }}"}
+        try {
+            var save = await fetch("{{ route('application.saveStep') }}", {
+                method: "POST", headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" }, body: fd
             });
-            const ok=await fin.json();
-
-            if(ok.status==="success"){
-                Swal.fire({
-                    icon:"success",
-                    title:"Application Submitted Successfully!",
-                    text:"Thank you for completing the process",
-                    timer:2200,
-                    showConfirmButton:false
+            var res = await save.json();
+            if (res.status !== "success") { alert("Error saving step"); return; }
+            if (isFinal) {
+                var fin = await fetch("{{ route('application.submit') }}", {
+                    method: "POST", headers: { "X-CSRF-TOKEN": "{{ csrf_token() }}" }
                 });
-                showStep(8,"forward");
+                var ok = await fin.json();
+                if (ok.status === "success") { alert("Application submitted successfully"); showStep(7, "forward"); }
+                return;
             }
-            return;
-        }
-
-        // ---- Go to Next Step AFTER Sweet Alert ----
-        currentStep++;
-        showStep(currentStep,"forward");
+            currentStep++;
+            showStep(currentStep, "forward");
+        } catch (e) { console.error("Error:", e); alert("Something went wrong. Check console."); }
     });
 });
-
-
 
 /* =========================================================
 =  BACK BUTTON
 ========================================================= */
 document.querySelectorAll(".btn-back").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-        if(currentStep>1){currentStep--;showStep(currentStep,"backward");}
-    });
+    btn.addEventListener("click", ()=>{ if(currentStep>1){ currentStep--; showStep(currentStep,"backward"); } });
 });
 
-
-
-
-// =====================
-// TOAST FUNCTION
-// =====================
+/* =========================================================
+=  TOAST
+========================================================= */
 function showToast(msg){
-    const c=document.getElementById("toast-container");
-    const t=document.createElement("div");
-    t.classList.add("toast"); t.innerText=msg; c.appendChild(t);
+    const c = document.getElementById("toast-container");
+    const t = document.createElement("div");
+    t.classList.add("toast"); t.innerText = msg; c.appendChild(t);
     setTimeout(()=>t.classList.add("show"),100);
-    setTimeout(()=>{t.classList.remove("show"); setTimeout(()=>t.remove(),500);},3000);
+    setTimeout(()=>{ t.classList.remove("show"); setTimeout(()=>t.remove(),500); },3000);
 }
-
-// =====================
-// SAVE DRAFT WITH 24 HOURS EXPIRY
-// =====================
-function saveDraft(step, data) {
-    const timestamp = new Date().getTime(); // current timestamp in ms
-    const draft = {
-        step: step,
-        data: data,
-        savedAt: timestamp
-    };
-    localStorage.setItem("applicationDraft", JSON.stringify(draft));
-    showToast("Draft saved successfully!");
-}
-
-// =====================
-// LOAD DRAFT IF WITHIN 24 HOURS
-// =====================
-function loadDraft() {
-    const draft = JSON.parse(localStorage.getItem("applicationDraft") || "{}");
-    if(!draft.savedAt) return null;
-
-    const now = new Date().getTime();
-    const diff = now - draft.savedAt;
-
-    if(diff > 24*60*60*1000){ // older than 24 hours
-        localStorage.removeItem("applicationDraft");
-        return null;
-    }
-
-    return draft;
-}
-
-// =====================
-// HOOK SAVE DRAFT BUTTONS
-// =====================
-document.querySelectorAll('button[value="save-draft"]').forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-        const stepBox = btn.closest(".slider-step");
-        const step = parseInt(stepBox.dataset.step);
-        const form = stepBox.querySelector("form");
-
-        if(!form) return;
-
-        let formData = {};
-        form.querySelectorAll("[name]").forEach(input=>{
-            if(input.type === "checkbox") formData[input.name] = input.checked ? 1 : 0;
-            else formData[input.name] = input.value;
-        });
-
-        saveDraft(step, formData);
-    });
-});
-
-// =====================
-// ON PAGE LOAD, RESTORE DRAFT
-// =====================
-window.addEventListener("DOMContentLoaded", ()=>{
-    const draft = loadDraft();
-    if(!draft) return;
-
-    const stepBox = document.querySelector(`.slider-step[data-step="${draft.step}"]`);
-    if(!stepBox) return;
-
-    const form = stepBox.querySelector("form");
-    if(!form) return;
-
-    Object.keys(draft.data).forEach(name=>{
-        const input = form.querySelector(`[name="${name}"]`);
-        if(!input) return;
-        if(input.type === "checkbox") input.checked = draft.data[name] == 1;
-        else input.value = draft.data[name];
-    });
-
-   // showToast("Draft restored from last session!");
-});
-
-
-
 
 /* =========================================================
 =  PASSWORD TOGGLE
 ========================================================= */
 document.querySelectorAll(".toggle-password").forEach(i=>{
     i.addEventListener("click",()=>{
-        const inp=document.querySelector(i.dataset.target);
-        inp.type=inp.type==="password"?"text":"password";
+        const inp = document.querySelector(i.dataset.target);
+        inp.type = inp.type==="password"?"text":"password";
         i.classList.toggle("fa-eye-slash");
     });
 });
 
-
 /* =========================================================
-=  COPY ADDRESS
+=  COPY ADDRESS (SAME AS ABOVE) — single listener
 ========================================================= */
 document.getElementById("same-address-checkbox")?.addEventListener("change", function () {
-
     if (this.checked) {
-
-        // Copy text inputs
-        document.getElementById("contact-postal-code").value =
-            document.getElementById("app-form-postal-code").value;
-
-        document.getElementById("contact-address-line-one").value =
-            document.getElementById("app-form-address-line-one").value;
-
-        document.getElementById("contact-address-line-two").value =
-            document.getElementById("app-form-address-line-two").value;
-
-        // Copy country (SELECT)
-        const mainCountry = document.getElementById("app-form-country").value;
+        document.getElementById("contact-postal-code").value       = document.getElementById("app-form-postal-code").value;
+        document.getElementById("contact-address-line-one").value  = document.getElementById("app-form-address-line-one").value;
+        document.getElementById("contact-address-line-two").value  = document.getElementById("app-form-address-line-two").value;
+        document.getElementById("contact-city").value              = document.getElementById("app-form-city").value;
+        const mainCountry    = document.getElementById("app-form-country").value;
         const contactCountry = document.getElementById("contact-country");
-
-        contactCountry.value = mainCountry;
-        contactCountry.dispatchEvent(new Event("change")); // important
-
-    } else {
-
-        // Clear contact address fields
-        document.getElementById("contact-postal-code").value = "";
-        document.getElementById("contact-address-line-one").value = "";
-        document.getElementById("contact-address-line-two").value = "";
-        document.getElementById("contact-country").value = "";
-
-    }
-});
-
-
-
-
-/* =========================================================
-=  EMPLOYMENT Toggle
-========================================================= */
-document.getElementById("emp-status")?.addEventListener("change",function(){
-    document.querySelectorAll(".employed-field").forEach(e=>e.classList.toggle("d-none",this.value!=="employed"));
-});
-
-
-/* =========================================================
-=  PNI Control
-========================================================= */
-document.querySelectorAll(".pni-option").forEach(o=>{
-    o.addEventListener("change",()=>document.querySelectorAll(".pni-option").forEach(x=>{if(x!==o)x.checked=false;}));
-});
-
-/* =========================================================
-=  Postal Code
-========================================================= */
-document.getElementById("same-address-checkbox")?.addEventListener("change", function () {
-
-    if (this.checked) {
-
-        document.getElementById("contact-postal-code").value =
-            document.getElementById("app-form-postal-code").value;
-
-        document.getElementById("contact-address-line-one").value =
-            document.getElementById("app-form-address-line-one").value;
-
-        document.getElementById("contact-address-line-two").value =
-            document.getElementById("app-form-address-line-two").value;
-
-        document.getElementById("contact-city").value =
-            document.getElementById("app-form-city").value;
-
-        // Country (select)
-        const mainCountry = document.getElementById("app-form-country").value;
-        const contactCountry = document.getElementById("contact-country");
-
         contactCountry.value = mainCountry;
         contactCountry.dispatchEvent(new Event("change"));
-
     } else {
-
-        document.getElementById("contact-postal-code").value = "";
+        document.getElementById("contact-postal-code").value      = "";
         document.getElementById("contact-address-line-one").value = "";
         document.getElementById("contact-address-line-two").value = "";
-        document.getElementById("contact-city").value = "";
-        document.getElementById("contact-country").value = "";
-
+        document.getElementById("contact-city").value             = "";
+        document.getElementById("contact-country").value          = "";
     }
 });
 
+/* =========================================================
+=  EMPLOYMENT TOGGLE
+========================================================= */
+document.getElementById("emp-status")?.addEventListener("change", function(){
+    document.querySelectorAll(".employed-field").forEach(e=>e.classList.toggle("d-none", this.value!=="employed"));
+});
 
+/* =========================================================
+=  PNI CONTROL
+========================================================= */
+document.querySelectorAll(".pni-option").forEach(o=>{
+    o.addEventListener("change",()=>document.querySelectorAll(".pni-option").forEach(x=>{ if(x!==o) x.checked=false; }));
+});
 
 /* =========================================================
 =  DATE PICKERS
 ========================================================= */
 function setPicker(className,type){
-    const i=document.querySelector(`.${className}`);
-    if(i){i.addEventListener("focus",()=>i.type=type);i.addEventListener("blur",()=>{if(!i.value)i.type="text";});}
+    const i = document.querySelector(`.${className}`);
+    if(i){ i.addEventListener("focus",()=>i.type=type); i.addEventListener("blur",()=>{ if(!i.value) i.type="text"; }); }
 }
 setPicker("app-date-picker","date");
-setPicker("af-registration-year-picker","month");
-setPicker("af-qualification-year-picker","month");
 
-showStep(1);
+(function(){
+    const currentYear = new Date().getFullYear();
+    const startYear   = 1950;
+    ["af-registration-year-picker","af-qualification-year-picker"].forEach(id => {
+        const sel = document.getElementById(id);
+        if(!sel) return;
+        for(let y = currentYear; y >= startYear; y--){
+            const opt = document.createElement("option");
+            opt.value = y; opt.textContent = y;
+            sel.appendChild(opt);
+        }
+    });
+})();
+
+window.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const res  = await fetch("{{ url('/application/get-last-step') }}");
+        const data = await res.json();
+        currentStep = data.step ? data.step : 1;
+        if (data.data) { fillFormFromDB(data.data); }
+        showStep(currentStep);
+        if (currentStep == 7) { generatePreview(); }
+    } catch (e) { console.error("Error loading step", e); showStep(1); }
+});
+
+/* =========================================================
+=  SAVE DRAFT — localStorage + MODAL (24h TTL)
+========================================================= */
+(function () {
+    const DRAFT_KEY = "applicationDraft";
+    const TTL       = 24 * 60 * 60 * 1000;
+
+    const STEP_LABELS = {
+        1: "Step 1 — Your Details",
+        2: "Step 2 — Contact & Security",
+        3: "Step 3 — Job Title & Grade",
+        4: "Step 4 — Professional Negligence",
+        5: "Step 5 — Pre-existing Issues",
+        6: "Step 6 — Claims Information",
+        7: "Step 7 — Preview"
+    };
+
+    const TEXTAREA_FIELDS = new Set([
+        "current_role_description","issue_q31","issue_q32","issue_q33",
+        "claims_q1","claims_q2","membership_cancelled"
+    ]);
+
+    const SENSITIVE_FIELDS = new Set(["password","confirm_password"]);
+
+    const FIELD_LABELS = {
+        gmc_gdc_type:"GMC / GDC", gmc_gdc_number:"Registration Number",
+        registration_year:"Registration Year", qualification_year:"Qualification Year",
+        specialty:"Specialty", professional_qualification:"Professional Qualification",
+        title:"Title", first_name:"First Name", middle_name:"Middle Name",
+        last_name:"Last Name", date_of_birth:"Date of Birth", gender:"Gender",
+        "postal-code":"Postal Code", address_line_1:"Address Line 1",
+        address_line_2:"Address Line 2", city:"City", country:"Country",
+        same_as_main_address:"Same As Above Address",
+        contact_postal_code:"Contact Postal Code",
+        contact_address_line_1:"Contact Address 1", contact_address_line_2:"Contact Address 2",
+        contact_city:"Contact City", contact_country:"Contact Country",
+        telephone_day:"Telephone (Day)", telephone_evening:"Telephone (Evening)",
+        mobile_number:"Mobile Number", primary_email:"Primary Email",
+        secondary_email:"Secondary Email", username:"Username",
+        password:"Password", confirm_password:"Confirm Password",
+        employment_status:"Employment Status", current_employer:"Current Employer",
+        employment_grade:"Employment Grade", lead_employer:"Main Place of Work",
+        current_role_description:"Description of Current Role",
+        pni_required_yes:"PNI Required",
+        issue_q31:"Conduct / Capability Concerns (5 yrs)",
+        issue_q32:"Potential Claims or Complaints",
+        issue_q33:"Disciplinary / GMC / GDC Proceedings (10 yrs)",
+        claims_q1:"Claims or Complaints (3 yrs)",
+        claims_q2:"Potential Acts / Errors / Incidents",
+        membership_cancelled:"Membership Cancelled / Refused",
+        previous_membership_name:"Previous Membership Name",
+        previous_membership_expiry:"Previous Membership Expiry"
+    };
+
+    /* --- helpers --- */
+    function saveToDraft(step, data) {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify({ step, data, savedAt: Date.now() }));
+    }
+
+    window.loadDraft = function () {
+        try {
+            const raw = localStorage.getItem(DRAFT_KEY);
+            if (!raw) return null;
+            const draft = JSON.parse(raw);
+            if (!draft.savedAt || Date.now() - draft.savedAt > TTL) {
+                localStorage.removeItem(DRAFT_KEY); return null;
+            }
+            return draft;
+        } catch { return null; }
+    };
+
+    function formatExpiry(savedAt) {
+        const rem  = TTL - (Date.now() - savedAt);
+        const hrs  = Math.floor(rem / 3600000);
+        const mins = Math.floor((rem % 3600000) / 60000);
+        if (hrs  > 0) return `Expires in ${hrs}h ${mins}m`;
+        if (mins > 0) return `Expires in ${mins}m`;
+        return "Expires soon";
+    }
+
+    /* --- modal body builder --- */
+    function buildModalBody(draft) {
+        const body = document.getElementById("draftModalBody");
+        body.innerHTML = "";
+
+        if (!draft || !draft.data || !Object.keys(draft.data).length) {
+            body.innerHTML = `<div class="dm-empty"><i class="fa-solid fa-inbox" style="font-size:26px;display:block;margin-bottom:8px;color:#ccc;"></i>No data saved yet.</div>`;
+            return;
+        }
+
+        const stepNum = draft.step || 1;
+        let html = `<div class="dm-step-title">${STEP_LABELS[stepNum] || 'Step ' + stepNum}</div>`;
+        html += `<div class="dm-grid">`;
+
+        Object.entries(draft.data).forEach(([name, raw]) => {
+            const value = String(raw ?? "").trim();
+            if (!value || value === "0") return;
+            const label   = FIELD_LABELS[name] || name.replace(/_/g, " ");
+            const isTA    = TEXTAREA_FIELDS.has(name);
+            const display = SENSITIVE_FIELDS.has(name) ? "••••••••" : value;
+            html += `
+                <div class="dm-field${isTA ? ' full' : ''}">
+                    <div class="dm-field-label">${label}</div>
+                    <div class="dm-field-value${isTA ? ' ta' : ''}">${display}</div>
+                </div>`;
+        });
+
+        html += `</div>`;
+        body.innerHTML = html;
+    }
+
+    /* --- open / close --- */
+    function openModal(draft) {
+        document.getElementById("draftExpiryText").textContent = draft ? formatExpiry(draft.savedAt) : "Expires in 24h";
+        buildModalBody(draft);
+        document.getElementById("draftModalOverlay").classList.add("open");
+    }
+
+    function closeModal() {
+        document.getElementById("draftModalOverlay").classList.remove("open");
+    }
+
+    document.getElementById("draftModalCloseBtn").addEventListener("click", closeModal);
+    document.getElementById("draftCloseFooterBtn").addEventListener("click", closeModal);
+    document.getElementById("draftModalOverlay").addEventListener("click", function (e) {
+        if (e.target === this) closeModal();
+    });
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeModal();
+    });
+    document.getElementById("draftClearBtn").addEventListener("click", function () {
+        localStorage.removeItem(DRAFT_KEY);
+        closeModal();
+    });
+
+    /* --- hook every Save Draft button --- */
+    document.querySelectorAll('button[value="save-draft"]').forEach(btn => {
+        btn.addEventListener("click", function () {
+            const stepBox = btn.closest(".slider-step");
+            if (!stepBox) return;
+            const step = parseInt(stepBox.dataset.step);
+            const form = stepBox.querySelector("form");
+            if (!form) return;
+
+            const formData = {};
+            form.querySelectorAll("[name]").forEach(input => {
+                if (input.type === "checkbox") formData[input.name] = input.checked ? 1 : 0;
+                else formData[input.name] = input.value;
+            });
+
+            saveToDraft(step, formData);
+            openModal({ step, data: formData, savedAt: Date.now() });
+        });
+    });
+
+    /* --- restore draft on page load (silent, no modal) --- */
+    window.addEventListener("DOMContentLoaded", function () {
+        const draft = loadDraft();
+        if (!draft) return;
+        const stepBox = document.querySelector(`.slider-step[data-step="${draft.step}"]`);
+        if (!stepBox) return;
+        const form = stepBox.querySelector("form");
+        if (!form) return;
+        Object.keys(draft.data).forEach(name => {
+            const input = form.querySelector(`[name="${name}"]`);
+            if (!input) return;
+            if (input.type === "checkbox") input.checked = draft.data[name] == 1;
+            else input.value = draft.data[name];
+        });
+    });
+
+})();
 </script>
 
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const today           = new Date();
+    const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+    const dobInput        = document.getElementById("app-form-date-of-birth");
+    const dobError        = document.getElementById("dobError");
+
+    flatpickr(dobInput, { dateFormat: "d/m/Y", allowInput: true, clickOpens: true, maxDate: eighteenYearsAgo });
+
+    dobInput.addEventListener("blur", function () {
+        const val = dobInput.value; if (!val) return;
+        const parts = val.split("/"); if (parts.length !== 3) return;
+        const dob = new Date(parseInt(parts[2],10), parseInt(parts[1],10)-1, parseInt(parts[0],10));
+        if (dob > eighteenYearsAgo) { dobError.style.display = "block"; dobInput.value = ""; }
+        else { dobError.style.display = "none"; }
+    });
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const empStatus      = document.getElementById("emp-status");
+    const employedFields = document.querySelectorAll(".employed-field");
+    const descField      = document.querySelector(".description-field");
+
+    function toggleEmploymentFields() {
+        const selected = empStatus.value;
+        employedFields.forEach(el => el.style.display = "none");
+        descField.style.display = "none";
+        if (selected === "employed")      { employedFields.forEach(el => el.style.display = "block"); descField.style.display = "block"; }
+        else if (selected === "self-employed") { descField.style.display = "block"; }
+    }
+
+    empStatus.addEventListener("change", toggleEmploymentFields);
+    toggleEmploymentFields();
+});
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    flatpickr("#prev-membership-expiry", { dateFormat: "d/m/Y", allowInput: true, clickOpens: true });
+});
+</script>
 
 </body>
-
 </html>

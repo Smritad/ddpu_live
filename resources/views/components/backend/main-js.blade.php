@@ -31,7 +31,8 @@
 
     <script src="{{ asset('admin/assets/js/datatable/datatables/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('admin/assets/js/datatable/datatables/datatable.custom.js') }}"></script>
-    
+        <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+
     <!-- Theme js-->
     <script src="{{ asset('admin/assets/js/script.js') }}"></script>
 
@@ -46,6 +47,94 @@
       focus: true   // Focus the editor when initialized
     });
   });
+</script>
+<script>
+  $(document).ready(function() {
+    $('#summernote1').summernote({
+      height: 200, // Adjust height as needed
+      focus: true   // Focus the editor when initialized
+    });
+  });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let editor;
+    ClassicEditor
+        .create(document.querySelector('#editor'))
+        .then(newEditor => {
+            editor = newEditor;
+        })
+        .catch(error => { console.error(error); });
+
+    // Attach submit listener to the form
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        // Update textarea value with CKEditor data
+        if (editor) {
+            document.querySelector('#editor').value = editor.getData();
+        }
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let editor;
+    ClassicEditor
+        .create(document.querySelector('#editor1'))
+        .then(newEditor => {
+            editor = newEditor;
+        })
+        .catch(error => { console.error(error); });
+
+    // Attach submit listener to the form
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        // Update textarea value with CKEditor data
+        if (editor) {
+            document.querySelector('#editor1').value = editor.getData();
+        }
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let editor;
+    ClassicEditor
+        .create(document.querySelector('#editor3'))
+        .then(newEditor => {
+            editor = newEditor;
+        })
+        .catch(error => { console.error(error); });
+
+    // Attach submit listener to the form
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        // Update textarea value with CKEditor data
+        if (editor) {
+            document.querySelector('#editor3').value = editor.getData();
+        }
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let editor;
+    ClassicEditor
+        .create(document.querySelector('#editor2'))
+        .then(newEditor => {
+            editor = newEditor;
+        })
+        .catch(error => { console.error(error); });
+
+    // Attach submit listener to the form
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        // Update textarea value with CKEditor data
+        if (editor) {
+            document.querySelector('#editor2').value = editor.getData();
+        }
+    });
+});
 </script>
 
 <script>
@@ -108,4 +197,56 @@
     </script>
 @endif
 
+<script>
+function previewSingleImage(input) {
+    const previewBox = document.getElementById('bannerPreviewBox');
+    const preview = document.getElementById('banner_preview');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.src = e.target.result;
+            previewBox.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function removeBannerImage() {
+    document.querySelector('input[name="banner_image"]').value = '';
+    document.getElementById('bannerPreviewBox').style.display = 'none';
+}
+
+function previewMultipleImages(input) {
+    const preview = document.getElementById('multiPreview');
+    preview.innerHTML = '';
+
+    Array.from(input.files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const div = document.createElement('div');
+            div.className = 'position-relative';
+
+            div.innerHTML = `
+                <span class="remove-img" onclick="removeMultiImage(${index})">×</span>
+                <img src="${e.target.result}" style="max-height:150px;border:1px solid #ddd;padding:5px;">
+            `;
+            preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function removeMultiImage(index) {
+    const input = document.querySelector('input[name="gallery_images[]"]');
+    const dt = new DataTransfer();
+
+    Array.from(input.files).forEach((file, i) => {
+        if (i !== index) dt.items.add(file);
+    });
+
+    input.files = dt.files;
+    previewMultipleImages(input);
+}
+</script>
 

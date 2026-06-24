@@ -26,7 +26,6 @@ class JoinmembershipApplicationController extends Controller
     $countries = DB::table('main_countries')->orderBy('name')->get();
 
     $joinmembership = JoinMembershipDetail::whereNull('deleted_at')->first();
-
     return view('frontend.joinmembership',compact('joinmembership','countries'));
 
 
@@ -36,12 +35,51 @@ class JoinmembershipApplicationController extends Controller
 
 
 
+// public function saveStep(Request $request)
+// {
+    
+//     $step = $request->step;
+
+//     // Get draft or create new
+//     $application = MembershipApplicationform::where('final_status', 0)
+//     ->where('session_id', session()->getId())
+//     ->first();    if (!$application) {
+//         $application = MembershipApplicationform::create([
+//             'final_status' => 0,
+//             'session_id' => session()->getId(),
+//             'ip_address' => $request->ip(),
+//         ]);
+//     }
+
+//     $data = [];
+
+//     foreach ($request->data ?? [] as $key => $value) {
+//         if ($value instanceof \Illuminate\Http\UploadedFile) {
+
+//             $fileName = time() . '_' . $value->getClientOriginalName();
+//             $value->move(public_path('applications'), $fileName);
+
+//             $data[$key] = 'applications/' . $fileName;
+//         } else {
+//             $data[$key] = $value;
+//         }
+//     }
+
+//     $column = "step" . $step;
+//     $application->$column = $data;
+//     $application->save();
+
+//     return response()->json(['status' => 'success', 'message' => "Step $step saved"]);
+// }
 public function saveStep(Request $request)
 {
     $step = $request->step;
 
     // Get draft or create new
-    $application = MembershipApplicationform::where('final_status', 0)->latest('id')->first();
+    $application = MembershipApplicationform::where('final_status', 0)
+        ->where('session_id', session()->getId())
+        ->first();
+
     if (!$application) {
         $application = MembershipApplicationform::create([
             'final_status' => 0,
@@ -53,24 +91,39 @@ public function saveStep(Request $request)
     $data = [];
 
     foreach ($request->data ?? [] as $key => $value) {
+
+        // ===============================
+        // FILE UPLOAD HANDLING
+        // ===============================
         if ($value instanceof \Illuminate\Http\UploadedFile) {
 
             $fileName = time() . '_' . $value->getClientOriginalName();
-            $value->move(public_path('applications'), $fileName);
 
-            $data[$key] = 'applications/' . $fileName;
+            // ðŸ”¥ STEP 7 FILE â†’ designated_body_docu
+            if ($step == 7) {
+                $value->move(public_path('designated_body_docu'), $fileName);
+                $data[$key] = 'designated_body_docu/' . $fileName;
+            } else {
+                // other steps normal upload folder
+                $value->move(public_path('applications'), $fileName);
+                $data[$key] = 'applications/' . $fileName;
+            }
+
         } else {
             $data[$key] = $value;
         }
     }
 
+    // Save JSON in column step1, step2 ... step7
     $column = "step" . $step;
     $application->$column = $data;
     $application->save();
 
-    return response()->json(['status' => 'success', 'message' => "Step $step saved"]);
+    return response()->json([
+        'status' => 'success',
+        'message' => "Step $step saved successfully"
+    ]);
 }
-
 
 
 /**
@@ -86,7 +139,7 @@ public function submitApplication(Request $request)
     ]);
 
     $application = MembershipApplicationform::where('final_status', 0)
-        ->latest('id')
+        ->where('session_id', session()->getId())
         ->first();
 
     if (!$application) {
@@ -101,48 +154,37 @@ public function submitApplication(Request $request)
 
     try {
         $step1 = $application->step1 ?? [];
-            $step2 = $application->step2 ?? [];
+        $step2 = $application->step2 ?? [];
 
-            // Build full name from Step 1
-            $firstName  = $step1['first_name'] ?? '';
-            $middleName = $step1['middle_name'] ?? '';
-            $lastName   = $step1['last_name'] ?? '';
+        // Build full name
+        $firstName  = $step1['first_name'] ?? '';
+        $middleName = $step1['middle_name'] ?? '';
+        $lastName   = $step1['last_name'] ?? '';
 
-            $name = trim($firstName . ' ' . $middleName . ' ' . $lastName);
+        $name = trim($firstName . ' ' . $middleName . ' ' . $lastName);
 
-            // Email & phone still come from Step 2
-            $email = $step2['primary_email'] ?? null;
-            $phone = $step2['mobile_number'] ?? null;
+        // Email & phone
+        $email = $step2['primary_email'] ?? null;
+        $phone = $step2['mobile_number'] ?? null;
 
-            if (!$email) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'Email is required in step 2'
-                ], 400);
-            }
-
-
-        // Check if email already exists
-        $existingUser = \App\Models\UsersMembership::where('email', $email)->first();
-        if ($existingUser) {
-            Log::warning('Email already exists', ['email' => $email]);
+        if (!$email) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Email already exists. Please use a different email.'
-            ], 409); // 409 Conflict
+                'message' => 'Email is required in step 2'
+            ], 400);
         }
 
-        // Create new user
+        // ✅ Allow duplicate email (no check)
+
         $user = \App\Models\UsersMembership::create([
             'name'     => $name,
             'email'    => $email,
             'phone'    => $phone,
-            'password' => bcrypt('123456'), // dummy password
+            'password' => bcrypt('123456'),
         ]);
 
         Log::info('User created', ['user_id' => $user->id]);
 
-        // Update application with final submit
         $application->update([
             'final_status' => 1,
             'submitted_at' => now(),
@@ -154,10 +196,9 @@ public function submitApplication(Request $request)
         return response()->json([
             'status' => 'success',
             'message' => 'Application submitted successfully',
-            'application_id' => $application->id, // use this in front-end
+            'application_id' => $application->id,
             'user_id' => $user->id,
         ]);
-
 
     } catch (\Throwable $e) {
         Log::error('submitApplication error', [
@@ -182,6 +223,39 @@ public function getSavedApplication()
     return response()->json(['status'=>'success','data'=>$application]);
 }
 
+
+
+public function getLastStep(Request $request)
+{
+    $sessionId = session()->getId();
+
+    Log::info('getLastStep called', [
+        'session_id' => $sessionId,
+        'ip' => $request->ip()
+    ]);
+
+    $app = MembershipApplicationForm::where('session_id', $sessionId)->latest()->first();
+
+    if (!$app) {
+        return response()->json(['step' => 1]);
+    }
+
+    $step = 1;
+
+    if ($app->step1) $step = 2;
+    if ($app->step2) $step = 3;
+    if ($app->step3) $step = 4;
+    if ($app->step4) $step = 5;
+    if ($app->step5) $step = 6;
+    if ($app->step6) $step = 7;
+        if ($app->step7) $step = 8;
+
+
+    return response()->json([
+        'step' => $step,
+        'data' => $app
+    ]);
+}
 
 }
 

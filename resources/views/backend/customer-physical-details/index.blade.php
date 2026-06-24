@@ -49,12 +49,7 @@
 
 							</div>
 
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('customer-physical.export', 'csv') }}"
-                          class="btn btn-outline-secondary btn-sm">
-                            Export CSV
-                        </a>
-                    </div>
+                   
                     <div class="table-responsive custom-scrollbar">
                     <div class="table-responsive custom-scrollbar">
                     <table class="table table-bordered" id="basic-1">
@@ -65,6 +60,7 @@
                                     <th>DD Reference</th>
                                    
                                     <th>Payment Plan</th>
+                                     <th>Direct Debit Form</th>
                                     <th>Direct Debit Form</th>
                                     <th>Date</th>
                                     <th>Status</th>
@@ -85,6 +81,8 @@
 
                                         <td>{{ $member->dd_reference ?? '-' }}</td>
                                         <td>{{ $step1['payment_plan'] ?? '-' }}</td>
+                                       <td>{{ $step1['payment_plan'] ?? '-' }}</td>
+
                                         <td>
                                             @if(!empty($step1['file_name']))
                                                 <a href="{{ asset('direct-debit/' . $step1['file_name']) }}" target="_blank">
