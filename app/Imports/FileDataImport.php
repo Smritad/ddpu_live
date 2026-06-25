@@ -62,7 +62,7 @@ class FileDataImport implements
                 'dd_reference'   => $row['dd_reference'] ?? null,
                 'sort_code'      => $this->cleanText($row['sort_code'] ?? null),
                 'account_number' => $this->cleanText($row['account_no'] ?? null),
-                'account_name'   => $this->cleanText($row['account_name'] ?? null),
+                'account_name'   => $this->cleanName($row['account_name'] ?? null),
 
                 // ✅ FIXED AMOUNT
                 'amount'         => $amount,
@@ -131,6 +131,19 @@ class FileDataImport implements
         if (!$value) return null;
 
         return trim(preg_replace('/[^A-Za-z0-9]/', '', $value));
+    }
+
+    /**
+     * ✅ CLEAN ACCOUNT NAME — keep spaces and BACS-allowed punctuation
+     * (& . / - and apostrophe). Only strips disallowed characters so names
+     * like "Dr. Junaid Tonse" or "Ghafoor & Zahid" survive intact.
+     */
+    private function cleanName($value)
+    {
+        if (!$value) return null;
+
+        $value = preg_replace('/[^A-Za-z0-9 .&\/\'\-]/', '', $value);
+        return trim(preg_replace('/\s+/', ' ', $value)); // collapse repeated spaces
     }
 
     /**
