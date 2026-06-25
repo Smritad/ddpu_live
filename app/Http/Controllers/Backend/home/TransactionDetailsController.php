@@ -18,15 +18,21 @@ class TransactionDetailsController extends Controller
 {
     public function index()
     {
-        // Eager load related file name
-        $fileDetails = FileDetail::with('file')->latest()->get();
+        // Eager load related file name. Hide the 0N "setup only" lines (£0.00)
+        // so the client sees only real collections — same as the FastPay portal.
+        $fileDetails = FileDetail::with('file')
+            ->whereRaw("UPPER(COALESCE(bacs_code,'')) <> '0N'")
+            ->latest()
+            ->get();
         return view('backend.transaction.index', compact('fileDetails'));
     }
 
     // CSV Export function
    public function exportCsv()
 {
-    $details = FileDetail::with('file')->get();
+    $details = FileDetail::with('file')
+        ->whereRaw("UPPER(COALESCE(bacs_code,'')) <> '0N'")
+        ->get();
     $fileName = 'file_details_' . date('YmdHis') . '.csv';
 
     $headers = [
