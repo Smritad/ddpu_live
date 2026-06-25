@@ -30,6 +30,8 @@ class FastpayCustomerController extends Controller
             ->where('dd_reference', '!=', '')
             ->orderByDesc('id')
             ->get()
+            // Drop the 0N "setup only" lines so each member shows once with the real amount.
+            ->reject(fn ($d) => strtoupper((string) $d->bacs_code) === '0N')
             ->unique('dd_reference')
             ->map(function ($d) {
                 return [

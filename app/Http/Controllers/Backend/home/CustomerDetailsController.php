@@ -778,22 +778,28 @@ class CustomerDetailsController extends Controller
                     data_get($step1, 'title'),
                     data_get($step1, 'last_name'),
                 ])));
-                // BACS transaction code per BACS/AUDDIS rules:
-                //   01 = first collection of a series  |  17 = regular/recurring collection.
-                // A member already present in a previously uploaded file is recurring (17);
-                // a brand-new reference is their first collection (01).
-                $bacsCode = ($member->dd_reference && $collectedRefs->has($member->dd_reference))
-                    ? '17'
-                    : '01';
 
-                fputcsv($handle, [
-                    $member->dd_reference ?? '',
-                    data_get($payment, 'sort_code', ''),
-                    data_get($payment, 'account_number', ''),
-                    $fullName,
-                    $member->price ?? 0,
-                    $bacsCode,
-                ]);
+                $ref    = $member->dd_reference ?? '';
+                $sort   = data_get($payment, 'sort_code', '');
+                $acc    = data_get($payment, 'account_number', '');
+                $amount = number_format((float) ($member->price ?? 0), 2, '.', '');
+
+                // Client BACS rules:
+                //   0N = setup only (no collection) | 01 = first payment | 17 = regular payment.
+                // A reference NOT in any previous file is a NEW direct debit → its first
+                // collection is split into TWO lines: an 0N at £0.00 (setup) and an 01 with
+                // the amount. Every subsequent collection is a single line with code 17.
+                $isNewDirectDebit = !($ref && $collectedRefs->has($ref));
+
+                if ($isNewDirectDebit) {
+                    // Line 1: setup only, zero amount
+                    fputcsv($handle, [$ref, $sort, $acc, $fullName, '0.00', '0N']);
+                    // Line 2: first payment, with amount
+                    fputcsv($handle, [$ref, $sort, $acc, $fullName, $amount, '01']);
+                } else {
+                    // Regular / subsequent collection (incl. existing annual single instalment)
+                    fputcsv($handle, [$ref, $sort, $acc, $fullName, $amount, '17']);
+                }
             }
             fclose($handle);
         }, 200, [
