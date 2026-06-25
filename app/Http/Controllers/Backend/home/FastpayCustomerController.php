@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Backend\home;
 
 use App\Http\Controllers\Controller;
 use App\Services\FastPayService;
+use App\Models\FileDetail;
 use Illuminate\Support\Facades\Log;
 
 class FastpayCustomerController extends Controller
@@ -16,19 +17,32 @@ class FastpayCustomerController extends Controller
     }
 
     /**
-     * Customers tab — list every FastPay customer with their status.
+     * Customers tab — the customers that come from OUR uploaded files
+     * (one row per unique DD reference found in file_details). The detail
+     * popup still fetches that customer's history live from FastPay.
      */
     public function index()
     {
-        $customers = [];
-        $error     = null;
+        $error = null;
 
-        try {
-            $customers = $this->fastpay->getAllCustomers();
-        } catch (\Throwable $e) {
-            $error = 'Could not load customers from FastPay: ' . $e->getMessage();
-            Log::error('FastPay customers list failed', ['error' => $e->getMessage()]);
-        }
+        $customers = FileDetail::query()
+            ->whereNotNull('dd_reference')
+            ->where('dd_reference', '!=', '')
+            ->orderByDesc('id')
+            ->get()
+            ->unique('dd_reference')
+            ->map(function ($d) {
+                return [
+                    'dd_reference'   => $d->dd_reference,
+                    'account_name'   => $d->account_name,
+                    'sort_code'      => $this->padSortCode($d->sort_code),
+                    'account_number' => $this->padAccount($d->account_number),
+                    'amount'         => (float) ($d->amount ?? 0),
+                    'status'         => $d->status ?: 'processing',
+                ];
+            })
+            ->values()
+            ->all();
 
         return view('backend.fastpay-customers.index', compact('customers', 'error'));
     }

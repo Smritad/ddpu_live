@@ -60,8 +60,8 @@
                     <div class="card-body">
 
                         <p class="mb-3" style="font-size:13px;color:#6b7280;">
-                            Live customer list and Direct Debit history from the FastPay portal
-                            &mdash; {{ count($customers) }} customer(s).
+                            Customers from your uploaded Direct Debit files
+                            &mdash; {{ count($customers) }} customer(s). Click <b>View</b> for full history from FastPay.
                         </p>
 
                         @if($error)
@@ -76,7 +76,7 @@
                                         <th>Account Name</th>
                                         <th>Sort Code</th>
                                         <th>Account Number</th>
-                                        <th>Effective / Suspension Date</th>
+                                        <th>Amount</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
@@ -84,19 +84,18 @@
                                 <tbody>
                                     @foreach($customers as $c)
                                         @php
-                                            $status = $c['Status'] ?? '';
-                                            $cls    = 'fp-' . strtolower($status);
-                                            $ref    = $c['DDReference'] ?? '';
-                                            $date   = !empty($c['SuspensionDate']) && !str_starts_with($c['SuspensionDate'], '0001')
-                                                      ? \Carbon\Carbon::parse($c['SuspensionDate'])->format('d/m/Y') : '';
+                                            $status = $c['status'] ?? '';
+                                            $sl     = strtolower($status);
+                                            $cls    = $sl === 'paid' ? 'fp-paid' : ($sl === 'failed' ? 'fp-failed' : 'fp-suspended');
+                                            $ref    = $c['dd_reference'] ?? '';
                                         @endphp
                                         <tr>
                                             <td>{{ $ref }}</td>
-                                            <td>{{ $c['AccountName'] ?? '' }}</td>
-                                            <td>{{ $c['SortCode'] ?? '' }}</td>
-                                            <td>{{ $c['AccountNumber'] ?? '' }}</td>
-                                            <td>{{ $date }}</td>
-                                            <td><span class="fp-badge {{ $cls }}">{{ $status }}</span></td>
+                                            <td>{{ $c['account_name'] ?? '' }}</td>
+                                            <td>{{ $c['sort_code'] ?? '' }}</td>
+                                            <td>{{ $c['account_number'] ?? '' }}</td>
+                                            <td>£{{ number_format($c['amount'] ?? 0, 2) }}</td>
+                                            <td><span class="fp-badge {{ $cls }}">{{ ucfirst($status) }}</span></td>
                                             <td>
                                                 <button type="button" class="btn btn-primary btn-sm"
                                                         style="color:#fff;white-space:nowrap;padding:5px 16px;"
