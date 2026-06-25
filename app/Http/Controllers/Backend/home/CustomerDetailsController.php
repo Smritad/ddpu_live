@@ -784,6 +784,11 @@ class CustomerDetailsController extends Controller
                 $acc    = data_get($payment, 'account_number', '');
                 $amount = number_format((float) ($member->price ?? 0), 2, '.', '');
 
+                // Account Name = the BANK ACCOUNT HOLDER (the editable "Account Name"
+                // field in User Details), not the member's name — BACS requires the
+                // name on the bank account. Fall back to the member name if blank.
+                $accountName = trim((string) data_get($payment, 'account_holder', '')) ?: $fullName;
+
                 // Client BACS rules:
                 //   0N = setup only (no collection) | 01 = first payment | 17 = regular payment.
                 // A reference NOT in any previous file is a NEW direct debit → its first
@@ -793,12 +798,12 @@ class CustomerDetailsController extends Controller
 
                 if ($isNewDirectDebit) {
                     // Line 1: setup only, zero amount
-                    fputcsv($handle, [$ref, $sort, $acc, $fullName, '0.00', '0N']);
+                    fputcsv($handle, [$ref, $sort, $acc, $accountName, '0.00', '0N']);
                     // Line 2: first payment, with amount
-                    fputcsv($handle, [$ref, $sort, $acc, $fullName, $amount, '01']);
+                    fputcsv($handle, [$ref, $sort, $acc, $accountName, $amount, '01']);
                 } else {
                     // Regular / subsequent collection (incl. existing annual single instalment)
-                    fputcsv($handle, [$ref, $sort, $acc, $fullName, $amount, '17']);
+                    fputcsv($handle, [$ref, $sort, $acc, $accountName, $amount, '17']);
                 }
             }
             fclose($handle);
