@@ -156,9 +156,15 @@ class FastpayCustomerController extends Controller
     private function statusLabel(array $t): string
     {
         if (!empty($t['WebStatusDetails'])) return (string) $t['WebStatusDetails'];
-        if (!empty($t['ErrorCode']))        return (string) $t['ErrorCode'];
 
-        return (int) ($t['ErrorCodeID'] ?? 0) === 0 ? 'Paid' : 'Failed';
+        // Verified against the FastPay portal: WebStatus 1 = Paid, 2 = Failed.
+        // (ErrorCodeID is 0 even for failed rows, so it can't be used.)
+        return match ((int) ($t['WebStatus'] ?? 0)) {
+            1       => 'Paid',
+            2       => 'Failed',
+            0       => 'Pending',
+            default => 'Other',
+        };
     }
 
     private function formatDate(?string $raw): string
