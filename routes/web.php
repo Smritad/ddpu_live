@@ -327,3 +327,18 @@ Route::get('/contact', [ContactController::class, 'index'])->name('frontend.cont
 Route::post('/contact-send', [ContactController::class, 'send'])->name('contact.send');
 
 
+
+// Cache clear via browser (no terminal needed). Visit: /clear-cache-9f3x7q
+// Remove this route after go-live for security.
+Route::get('/clear-cache-9f3x7q', function () {
+    $out = [];
+    foreach (['config:clear', 'route:clear', 'view:clear', 'cache:clear'] as $cmd) {
+        try {
+            \Illuminate\Support\Facades\Artisan::call($cmd);
+            $out[] = "OK  {$cmd} -> " . trim(\Illuminate\Support\Facades\Artisan::output());
+        } catch (\Throwable $e) {
+            $out[] = "ERR {$cmd}: " . $e->getMessage();
+        }
+    }
+    return '<pre>' . implode("\n", $out) . '</pre>';
+});
