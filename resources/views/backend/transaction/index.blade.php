@@ -80,46 +80,33 @@
                     <th>Account Name</th>
                     <th>Collection Date</th>
                     <th>BACS Code</th>
-                      <th>Amount</th>
-                     <th>File Name</th>
+                    <th>Amount</th>
                     <th>Status</th>
-                   
+                    <th>Filename</th>
                   </tr>
                 </thead>
                 <tbody>
-                    
-                  @foreach ($fileDetails as $index => $detail)
+                  @foreach ($fileDetails as $detail)
+                    @php
+                        $coll    = $detail->file->collection_date ?? null;
+                        $collFmt = $coll ? \Carbon\Carbon::parse($coll)->format('d/m/Y') : 'N/A';
+                        $ext     = strtolower(pathinfo($detail->file->file_name ?? '', PATHINFO_EXTENSION) ?: 'csv');
+                        $fileNice = $coll
+                            ? \Carbon\Carbon::parse($coll)->format('y-m-d') . " DDPU (Monthly on the 10th).{$ext}"
+                            : ($detail->file->file_name ?? 'N/A');
+                        $st      = strtolower($detail->status ?? 'processing');
+                        $stClass = $st === 'paid' ? 'badge-success' : ($st === 'failed' ? 'badge-danger' : 'badge-warning');
+                    @endphp
                     <tr>
                       <td>{{ $detail->dd_reference }}</td>
                       <td>{{ $detail->account_name }}</td>
-                       <td>{{ $detail->file->collection_date ?? 'N/A' }}</td>
+                      <td>{{ $collFmt }}</td>
                       <td>{{ $detail->bacs_code }}</td>
-                      <td>{{ $detail->amount }}</td>
-                    <td>
-                    @php
-                        $originalName = $detail->file->file_name ?? null;
-
-                        if ($originalName) {
-                            // Extract main parts
-                            if (preg_match('/^([A-Za-z]+)[^0-9]*([0-9]{8})/', $originalName, $matches)) {
-                                $name = strtoupper($matches[1]);
-                                $date = \Carbon\Carbon::createFromFormat('Ymd', $matches[2])->format('y-m-d');
-                                echo "{$date} {$name} (Monthly on the 10th).xlsx";
-                            } else {
-                                echo $originalName;
-                            }
-                        } else {
-                            echo 'N/A';
-                        }
-                    @endphp
-                    </td>
+                      <td>{{ number_format((float) $detail->amount, 2) }}</td>
                       <td>
-                        <span class="badge 
-                          {{ $detail->status == 'Processed' ? 'badge-success' : 'badge-warning' }}">
-                          {{ $detail->status ?? 'Pending' }}
-                        </span>
+                        <span class="badge {{ $stClass }}">{{ ucfirst($detail->status ?? 'processing') }}</span>
                       </td>
-                     
+                      <td>{{ $fileNice }}</td>
                     </tr>
                   @endforeach
                 </tbody>
