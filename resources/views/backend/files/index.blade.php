@@ -294,10 +294,9 @@ table.main-tbl tbody tr:hover{background:#f8faff;}
   $formattedDate = $file->collection_date
    ? \Carbon\Carbon::parse($file->collection_date)->format('y-m-d')
    : '—';
-  $fileTitle = 'DDPU (Monthly on the 10th)';
-  $note      = $file->notes ? "({$file->notes})" : '';
-  $extension = pathinfo($file->file_name, PATHINFO_EXTENSION) ?: 'xlsx';
-  $displayName = "{$formattedDate} {$fileTitle} {$note}";
+  $extension = strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION) ?: 'csv');
+  // FastPay-style standardised file name (note is shown in its own column)
+  $displayName = "{$formattedDate} DDPU (Monthly on the 10th).{$extension}";
   $statusClass = match($file->status ?? 'pending') {
    'uploaded' => 'uploaded',
    'failed'   => 'failed',
@@ -309,22 +308,14 @@ table.main-tbl tbody tr:hover{background:#f8faff;}
   <td>
    <div class="fn-cell">
     <div class="fn-ico">📄</div>
-    <div>
-     <div class="fn-name">{{ $displayName }}</div>
-     <div class="fn-ext">.{{ strtoupper($extension) }}</div>
-    </div>
+    <div class="fn-name">{{ $displayName }}</div>
    </div>
   </td>
   <td style="white-space:nowrap;">
-   {{ $file->collection_date ? \Carbon\Carbon::parse($file->collection_date)->format('d M Y') : '—' }}
+   {{ $file->collection_date ? \Carbon\Carbon::parse($file->collection_date)->format('d/m/Y') : '—' }}
   </td>
-  <td style="white-space:nowrap;font-size:12px;color:#6b7280;">
-   @if($file->uploaded_date)
-    {{ \Carbon\Carbon::parse($file->uploaded_date)->format('d M Y') }}<br>
-    <span style="font-size:10px;">{{ \Carbon\Carbon::parse($file->uploaded_date)->format('H:i') }}</span>
-   @else
-    —
-   @endif
+  <td style="white-space:nowrap;">
+   {{ $file->uploaded_date ? \Carbon\Carbon::parse($file->uploaded_date)->format('d/m/Y') : '—' }}
   </td>
   <td style="font-size:12px;color:#6b7280;">{{ $file->notes ?? '—' }}</td>
   <td><span class="amt">£{{ number_format($file->total_amount, 2) }}</span></td>
