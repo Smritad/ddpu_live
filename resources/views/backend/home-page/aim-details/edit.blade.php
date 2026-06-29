@@ -77,7 +77,12 @@
     <div class="col-12">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h5 class="card-title mb-3">Aim Details</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="card-title mb-0">Aim Details</h5>
+                    <button type="button" class="btn btn-success" onclick="addRow()">
+                        <i class="bi bi-plus-circle"></i> Add Row
+                    </button>
+                </div>
 
                 <table class="table table-bordered align-middle" id="aimTable">
                     <thead class="table-light">
@@ -116,10 +121,6 @@
                         @endforeach
                     </tbody>
                 </table>
-
-                <button type="button" class="btn btn-success mt-2" onclick="addRow()">
-                    <i class="bi bi-plus-circle"></i> Add Row
-                </button>
             </div>
         </div>
     </div>
