@@ -108,9 +108,6 @@
                                 <textarea name="description[]" class="form-control" rows="2">{{ $detail['description'] }}</textarea>
                             </td>
                             <td>
-                                <button type="button" class="btn btn-success w-100 mb-1" onclick="addRow()">
-                                    <i class="bi bi-plus-circle"></i> Add
-                                </button>
                                 <button type="button" class="btn btn-danger w-100" onclick="removeRow(this)">
                                     <i class="bi bi-trash"></i> Remove
                                 </button>
@@ -119,6 +116,10 @@
                         @endforeach
                     </tbody>
                 </table>
+
+                <button type="button" class="btn btn-success mt-2" onclick="addRow()">
+                    <i class="bi bi-plus-circle"></i> Add Row
+                </button>
             </div>
         </div>
     </div>
@@ -183,7 +184,6 @@
             <td><input type="text" name="heading[]" class="form-control" placeholder="Heading"></td>
             <td><textarea name="description[]" class="form-control" rows="2" placeholder="Description"></textarea></td>
             <td>
-                <button type="button" class="btn btn-success w-100 mb-1" onclick="addRow()"><i class="bi bi-plus-circle"></i> Add</button>
                 <button type="button" class="btn btn-danger w-100" onclick="removeRow(this)"><i class="bi bi-trash"></i> Remove</button>
             </td>
         `;
