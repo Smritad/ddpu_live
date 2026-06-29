@@ -65,8 +65,13 @@
                                         <div class="col-12">
                                             <div class="card shadow-sm">
                                                 <div class="card-body">
-                                                    <h5 class="card-title mb-3">whychoose Details</h5>
-                                                    
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h5 class="card-title mb-0">whychoose Details</h5>
+                                                        <button type="button" class="btn btn-success" onclick="addRow()">
+                                                            <i class="bi bi-plus-circle"></i> Add Row
+                                                        </button>
+                                                    </div>
+
                                                     <table class="table table-bordered align-middle" id="whychooseTable">
                                                         <thead class="table-light">
                                                             <tr>
@@ -86,9 +91,6 @@
                                                                     <input type="text" name="title[]" class="form-control" placeholder="Enter title" required>
                                                                 </td>
                                                                 <td>
-                                                                    <button type="button" class="btn btn-success w-100 mb-1" onclick="addRow()">
-                                                                        <i class="bi bi-plus-circle"></i> Add
-                                                                    </button>
                                                                     <button type="button" class="btn btn-danger w-100" onclick="removeRow(this)">
                                                                         <i class="bi bi-trash"></i> Remove
                                                                     </button>
@@ -144,7 +146,6 @@
             </td>
             <td><input type="text" name="title[]" class="form-control" placeholder="Enter title" required></td>
             <td>
-                <button type="button" class="btn btn-success w-100 mb-1" onclick="addRow()"><i class="bi bi-plus-circle"></i> Add</button>
                 <button type="button" class="btn btn-danger w-100" onclick="removeRow(this)"><i class="bi bi-trash"></i> Remove</button>
             </td>
         `;
