@@ -1,0 +1,13 @@
+User-agent: *
+
+# Allow all public content
+Allow: /
+
+# Block sensitive directories
+Disallow: /admin/
+Disallow: /login/
+Disallow: /cgi-bin/
+Disallow: /private/
+Disallow: /tmp/
+Disallow: /search?
+Disallow: /thank-you/

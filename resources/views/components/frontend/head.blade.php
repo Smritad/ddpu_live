@@ -4,8 +4,9 @@
   <title>The Doctors and Dentists Protection Union (DDPU) - DDPU</title>
   <meta name="description" content="">
   <meta name="keywords" content="">
+ <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 
-  <!-- Favicons -->
+  <!-- Faviconons -->
   <link href="{{ asset('frontend/assets/img/logo/favicon.png')}}" rel="icon">
 
   <!-- Fonts -->
